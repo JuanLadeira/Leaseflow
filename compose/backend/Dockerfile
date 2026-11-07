@@ -30,4 +30,6 @@ RUN useradd --create-home --uid 1000 app && chown -R app /app
 USER app
 EXPOSE 8000
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# PORT and WEB_CONCURRENCY come from the platform when it sets them (Render sets
+# WEB_CONCURRENCY=1 on its free plan, where two workers can run out of memory).
+CMD ["sh", "-c", "exec uvicorn config.asgi:application --host 0.0.0.0 --port ${PORT:-8000} --workers ${WEB_CONCURRENCY:-2}"]
