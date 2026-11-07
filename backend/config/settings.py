@@ -95,6 +95,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
 )
+# On Render the blueprint passes the static site's host name only.
+if FRONTEND_HOST := os.environ.get("FRONTEND_HOST"):
+    CORS_ALLOWED_ORIGINS.append(f"https://{FRONTEND_HOST}")
+
+# Behind a TLS-terminating proxy (Render, nginx): trust its scheme header.
+if env_bool("DJANGO_BEHIND_PROXY"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # --- JWT -------------------------------------------------------------------
 JWT_SECRET = os.environ.get("JWT_SECRET", SECRET_KEY)
