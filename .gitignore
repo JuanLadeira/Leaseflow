@@ -225,3 +225,5 @@ frontend/dist/
 frontend/coverage/
 *.tsbuildinfo
 .DS_Store
+# The Python template above ignores every lib/ folder; keep the frontend's shared/lib.
+!frontend/src/shared/lib/
