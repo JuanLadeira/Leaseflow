@@ -1,18 +1,21 @@
 /**
  * Translation resources, one namespace per feature folder.
  * Each feature keeps its strings next to its code in `locales/<lang>.json`;
- * this file is the only place that wires them together.
+ * this file (in app/, which may depend on features) is the only place that wires them together.
  */
 import authEn from '@/features/auth/locales/en.json'
 import authPt from '@/features/auth/locales/pt-BR.json'
+import dashboardEn from '@/features/dashboard/locales/en.json'
+import dashboardPt from '@/features/dashboard/locales/pt-BR.json'
 import commonEn from '@/shared/locales/en.json'
 import commonPt from '@/shared/locales/pt-BR.json'
-import type { Language } from './languages'
+import type { Language } from '@/shared/i18n/languages'
 
 /** English is the source of truth: its shape types every `t()` key. */
 export const en = {
   common: commonEn,
   auth: authEn,
+  dashboard: dashboardEn,
 }
 
 export type Resources = typeof en
@@ -23,5 +26,6 @@ export const resources: Record<Language, Record<keyof Resources, object>> = {
   'pt-BR': {
     common: commonPt,
     auth: authPt,
+    dashboard: dashboardPt,
   },
 }

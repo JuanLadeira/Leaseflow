@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import {
   ArrowRight,
@@ -14,7 +15,13 @@ import {
 import { useGetLeadsQuery } from '@/features/leads'
 import { useGetVisitsQuery } from '@/features/visits'
 import { LEAD_STATUSES } from '@/shared/api/types'
-import { formatPercent, formatRelative, LEAD_STATUS_LABEL } from '@/shared/lib/format'
+import {
+  formatPercent,
+  formatRelative,
+  formatTime,
+  formatUpcomingDay,
+  leadStatusLabel,
+} from '@/shared/lib/format'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/shared/ui/StateViews'
 import { useGetDashboardQuery } from './dashboardApi'
@@ -29,19 +36,6 @@ function upcomingRange() {
   const end = new Date(start)
   end.setDate(end.getDate() + UPCOMING_DAYS)
   return { start: start.toISOString(), end: end.toISOString() }
-}
-
-const dayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-const timeLabel = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
-
-function relativeDay(iso: string) {
-  const date = new Date(iso)
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
-  if (date.toDateString() === today.toDateString()) return 'Today'
-  if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
-  return dayLabel.format(date)
 }
 
 interface Stat {
@@ -67,6 +61,7 @@ function StatCard({ stat }: { stat: Stat }) {
 }
 
 function UpcomingTours() {
+  const { t } = useTranslation('dashboard')
   const [range] = useState(upcomingRange)
   const { data, isLoading, isError, refetch } = useGetVisitsQuery(range)
   const visits = data?.filter((visit) => visit.status === 'scheduled').slice(0, LIST_LIMIT)
@@ -75,20 +70,20 @@ function UpcomingTours() {
     <section className={`card ${styles.panel}`} aria-labelledby="upcoming-title">
       <header className={styles.panelHeader}>
         <h2 id="upcoming-title" className={styles.panelTitle}>
-          <CalendarClock aria-hidden="true" className="icon" /> Upcoming tours
+          <CalendarClock aria-hidden="true" className="icon" /> {t('tours.title')}
         </h2>
         <Link to="/visits" className={styles.panelLink}>
-          Open agenda <ArrowRight aria-hidden="true" className="icon" />
+          {t('tours.open')} <ArrowRight aria-hidden="true" className="icon" />
         </Link>
       </header>
       {isLoading ? (
         <Skeleton lines={4} />
       ) : isError ? (
-        <ErrorState message="Could not load tours." onRetry={refetch} />
+        <ErrorState message={t('tours.error')} onRetry={refetch} />
       ) : !visits?.length ? (
-        <EmptyState title="No tours in the next 7 days">
+        <EmptyState title={t('tours.empty')}>
           <Link to="/visits" className="btn">
-            Schedule a tour
+            {t('tours.schedule')}
           </Link>
         </EmptyState>
       ) : (
@@ -97,8 +92,8 @@ function UpcomingTours() {
             <li key={visit.id}>
               <Link to={`/leads/${visit.lead_id}`} className={styles.item}>
                 <span className={styles.when}>
-                  <span className={styles.whenDay}>{relativeDay(visit.starts_at)}</span>
-                  <time dateTime={visit.starts_at}>{timeLabel.format(new Date(visit.starts_at))}</time>
+                  <span className={styles.whenDay}>{formatUpcomingDay(visit.starts_at)}</span>
+                  <time dateTime={visit.starts_at}>{formatTime(visit.starts_at)}</time>
                 </span>
                 <span className={styles.itemMain}>
                   <span className={styles.itemTitle}>{visit.lead_name}</span>
@@ -116,6 +111,7 @@ function UpcomingTours() {
 }
 
 function AwaitingReply() {
+  const { t } = useTranslation('dashboard')
   const { data, isLoading, isError, refetch } = useGetLeadsQuery({ status: 'new', search: '' })
   const leads = data?.slice(0, LIST_LIMIT)
 
@@ -123,19 +119,19 @@ function AwaitingReply() {
     <section className={`card ${styles.panel}`} aria-labelledby="awaiting-title">
       <header className={styles.panelHeader}>
         <h2 id="awaiting-title" className={styles.panelTitle}>
-          <Inbox aria-hidden="true" className="icon" /> Waiting for a reply
+          <Inbox aria-hidden="true" className="icon" /> {t('awaiting.title')}
           {data && <span className={styles.counter}>{data.length}</span>}
         </h2>
         <Link to="/leads?status=new" className={styles.panelLink}>
-          View all <ArrowRight aria-hidden="true" className="icon" />
+          {t('awaiting.viewAll')} <ArrowRight aria-hidden="true" className="icon" />
         </Link>
       </header>
       {isLoading ? (
         <Skeleton lines={4} />
       ) : isError ? (
-        <ErrorState message="Could not load leads." onRetry={refetch} />
+        <ErrorState message={t('awaiting.error')} onRetry={refetch} />
       ) : !leads?.length ? (
-        <EmptyState title="Inbox zero">Every new lead has an answer.</EmptyState>
+        <EmptyState title={t('awaiting.empty')}>{t('awaiting.emptyBody')}</EmptyState>
       ) : (
         <ul className={styles.list}>
           {leads.map((lead) => (
@@ -161,8 +157,9 @@ function AwaitingReply() {
 }
 
 function DashboardSkeleton() {
+  const { t } = useTranslation('dashboard')
   return (
-    <div aria-busy="true" aria-label="Loading dashboard">
+    <div aria-busy="true" aria-label={t('loading')}>
       <ul className={styles.stats}>
         {Array.from({ length: 4 }, (_, i) => (
           <li key={i} className={`card ${styles.stat}`}>
@@ -178,24 +175,25 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation('dashboard')
   const { data, isLoading, isError, refetch } = useGetDashboardQuery()
 
   const header = (
     <div className="page-header">
       <div>
-        <h1 id="dashboard-title">Dashboard</h1>
-        <p>Portfolio health and leasing funnel at a glance.</p>
+        <h1 id="dashboard-title">{t('title')}</h1>
+        <p>{t('subtitle')}</p>
       </div>
       <Link to="/leads?status=new" className="btn btn-primary">
         <MessageSquareReply aria-hidden="true" />
-        Reply to new leads
+        {t('replyNew')}
       </Link>
     </div>
   )
 
   let body
   if (isLoading) body = <DashboardSkeleton />
-  else if (isError || !data) body = <ErrorState message="Could not load metrics." onRetry={refetch} />
+  else if (isError || !data) body = <ErrorState message={t('error')} onRetry={refetch} />
   else {
     const counts = data.leads_by_status
     const total = Object.values(counts).reduce((sum, n) => sum + n, 0)
@@ -203,30 +201,30 @@ export default function DashboardPage() {
     const occupied = data.total_units - data.vacant_units
     const stats: Stat[] = [
       {
-        label: 'Occupancy',
+        label: t('stats.occupancy'),
         value: formatPercent(data.occupancy_rate),
-        hint: `${occupied} of ${data.total_units} units leased`,
+        hint: t('stats.occupancyHint', { occupied, total: data.total_units }),
         icon: Building2,
         tone: 'var(--stage-won)',
       },
       {
-        label: 'Vacant units',
+        label: t('stats.vacant'),
         value: data.vacant_units,
-        hint: 'Ready to lease',
+        hint: t('stats.vacantHint'),
         icon: DoorOpen,
         tone: 'var(--stage-applied)',
       },
       {
-        label: 'Open leads',
+        label: t('stats.open'),
         value: counts.new + counts.contacted,
-        hint: `${counts.new} new · ${counts.contacted} contacted`,
+        hint: t('stats.openHint', { new: counts.new, contacted: counts.contacted }),
         icon: Inbox,
         tone: 'var(--stage-new)',
       },
       {
-        label: 'Lead conversion',
+        label: t('stats.conversion'),
         value: formatPercent(data.conversion_rate),
-        hint: `${counts.won} won of ${total} leads`,
+        hint: t('stats.conversionHint', { won: counts.won, total }),
         icon: Percent,
         tone: 'var(--stage-tour)',
       },
@@ -242,9 +240,9 @@ export default function DashboardPage() {
         <section className={`card ${styles.funnel}`} aria-labelledby="funnel-title">
           <header className={styles.panelHeader}>
             <h2 id="funnel-title" className={styles.panelTitle}>
-              <TrendingUp aria-hidden="true" className="icon" /> Leads by stage
+              <TrendingUp aria-hidden="true" className="icon" /> {t('funnel.title')}
             </h2>
-            <span className={styles.panelNote}>{total} leads in the pipeline</span>
+            <span className={styles.panelNote}>{t('funnel.total', { count: total })}</span>
           </header>
           <ul className={styles.bars}>
             {LEAD_STATUSES.map((status) => {
@@ -252,7 +250,7 @@ export default function DashboardPage() {
               return (
                 <li key={status} className={styles.bar}>
                   <Link to={`/leads?status=${status}`} className={styles.barLabel}>
-                    {LEAD_STATUS_LABEL[status]}
+                    {leadStatusLabel(status)}
                   </Link>
                   <span className={styles.track} aria-hidden="true">
                     <span

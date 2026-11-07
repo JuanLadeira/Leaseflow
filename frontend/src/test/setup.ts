@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
-import { i18n } from '@/shared/i18n'
+import { i18n } from '@/app/i18n'
 import { server } from './server'
 
 // Tests assert on English copy: pin the language regardless of the machine's locale.

@@ -72,6 +72,17 @@ export function formatDayHeading(iso: string, now = new Date()): string {
   )
 }
 
+/** "Today", "Tomorrow" or "Tue, Nov 10" for an upcoming event (words come from Intl). */
+export function formatUpcomingDay(iso: string, now = new Date()): string {
+  const date = new Date(iso)
+  const tomorrow = new Date(now)
+  tomorrow.setDate(now.getDate() + 1)
+  const relative = cached('relative', (l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }))
+  if (date.toDateString() === now.toDateString()) return capitalize(relative.format(0, 'day'))
+  if (date.toDateString() === tomorrow.toDateString()) return capitalize(relative.format(1, 'day'))
+  return formatDay(date)
+}
+
 // Status codes come from the API; their labels live in the `common` namespace.
 export const leadStatusLabel = (status: LeadStatus) => i18n.t(`leadStatus.${status}`)
 export const unitStatusLabel = (status: UnitStatus) => i18n.t(`unitStatus.${status}`)

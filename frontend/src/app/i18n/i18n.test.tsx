@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { formatCurrency, formatDateTime, formatPercent, leadStatusLabel } from '@/shared/lib/format'
-import { i18n, LanguageSwitcher } from '.'
-import { LANGUAGE_STORAGE_KEY } from './languages'
+import { i18n, LanguageSwitcher } from '@/shared/i18n'
+import { LANGUAGE_STORAGE_KEY } from '@/shared/i18n/languages'
 import { resources } from './resources'
 
 /** Every leaf key path of a nested JSON object, e.g. `leadStatus.new`. */

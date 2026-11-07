@@ -1,0 +1,36 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Portfolio health and leasing funnel at a glance.",
+  "replyNew": "Reply to new leads",
+  "loading": "Loading dashboard",
+  "error": "Could not load metrics.",
+  "stats": {
+    "occupancy": "Occupancy",
+    "occupancyHint": "{{occupied}} of {{total}} units leased",
+    "vacant": "Vacant units",
+    "vacantHint": "Ready to lease",
+    "open": "Open leads",
+    "openHint": "{{new}} new · {{contacted}} contacted",
+    "conversion": "Lead conversion",
+    "conversionHint": "{{won}} won of {{total}} leads"
+  },
+  "funnel": {
+    "title": "Leads by stage",
+    "total_one": "{{count}} lead in the pipeline",
+    "total_other": "{{count}} leads in the pipeline"
+  },
+  "tours": {
+    "title": "Upcoming tours",
+    "open": "Open agenda",
+    "error": "Could not load tours.",
+    "empty": "No tours in the next 7 days",
+    "schedule": "Schedule a tour"
+  },
+  "awaiting": {
+    "title": "Waiting for a reply",
+    "viewAll": "View all",
+    "error": "Could not load leads.",
+    "empty": "Inbox zero",
+    "emptyBody": "Every new lead has an answer."
+  }
+}
