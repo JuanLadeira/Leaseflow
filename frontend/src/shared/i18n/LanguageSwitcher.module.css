@@ -1,0 +1,24 @@
+.wrapper {
+  display: inline-flex;
+}
+
+.select {
+  appearance: none;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.select:hover {
+  background: var(--hover);
+}
+
+.select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}

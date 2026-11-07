@@ -56,16 +56,5 @@ export function slotTimes(duration: Duration): string[] {
 export const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) =>
   aStart < bEnd && bStart < aEnd
 
-export const formatTime = (iso: string | Date) =>
-  new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-
-/** "9:00 – 9:30 AM", or "11:30 AM – 12:00 PM" when the range crosses noon. */
-export function formatTimeRange(start: string | Date, end: string | Date): string {
-  const [from, to] = [formatTime(start), formatTime(end)]
-  const [fromClock, fromPeriod] = from.split(' ')
-  const toPeriod = to.split(' ')[1]
-  return fromPeriod === toPeriod ? `${fromClock} – ${to}` : `${from} – ${to}`
-}
-
-export const formatDay = (date: Date) =>
-  date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+// Locale-aware formatters live in shared/lib/format; re-exported for existing imports.
+export { formatDay, formatTime, formatTimeRange } from '@/shared/lib/format'

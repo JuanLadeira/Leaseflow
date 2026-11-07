@@ -1,0 +1,25 @@
+{
+  "language": {
+    "label": "Idioma"
+  },
+  "leadStatus": {
+    "new": "Novo",
+    "contacted": "Contatado",
+    "tour_scheduled": "Visita agendada",
+    "applied": "Proposta enviada",
+    "won": "Fechado",
+    "lost": "Perdido"
+  },
+  "unitStatus": {
+    "vacant": "Vaga",
+    "notice": "Em aviso prévio",
+    "occupied": "Ocupada"
+  },
+  "leadSource": {
+    "website": "Site",
+    "zillow": "Zillow",
+    "apartments_com": "Apartments.com",
+    "referral": "Indicação",
+    "walk_in": "Visita espontânea"
+  }
+}
