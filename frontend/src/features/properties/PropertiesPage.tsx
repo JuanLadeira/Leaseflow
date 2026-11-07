@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Pagination } from '@/shared/ui/Pagination'
-import { Spinner } from '@/shared/ui/Spinner'
+import { Loading, Skeleton, SkeletonBlock } from '@/shared/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/shared/ui/StateViews'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { formatPercent } from '@/shared/lib/format'
@@ -57,7 +57,18 @@ export default function PropertiesPage() {
       </div>
 
       {isLoading ? (
-        <Spinner label="Loading properties" />
+        <Loading label="Loading properties">
+          <div className={styles.grid} aria-hidden="true">
+            {Array.from({ length: PAGE_SIZE }, (_, i) => (
+              <div key={i} className={`card ${styles.card}`}>
+                <SkeletonBlock height="4.5rem" />
+                <div className={styles.body}>
+                  <Skeleton lines={3} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Loading>
       ) : isError ? (
         <ErrorState message="Could not load properties." onRetry={refetch} />
       ) : !data || data.items.length === 0 ? (

@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router'
-import { Spinner } from '@/shared/ui/Spinner'
+import { Loading, Skeleton, SkeletonBlock } from '@/shared/ui/Skeleton'
 import { ErrorState } from '@/shared/ui/StateViews'
 import { formatCurrency, LEAD_SOURCE_LABEL } from '@/shared/lib/format'
 import { useGetLeadQuery } from './leadsApi'
@@ -11,7 +11,16 @@ export default function LeadDetailPage() {
   const leadId = Number(useParams().leadId)
   const { data: lead, isLoading, isError, refetch } = useGetLeadQuery(leadId)
 
-  if (isLoading) return <Spinner label="Loading lead" />
+  if (isLoading)
+    return (
+      <Loading label="Loading lead">
+        <div className={`card ${styles.loading}`}>
+          <Skeleton lines={2} />
+          <SkeletonBlock height="16rem" />
+          <SkeletonBlock height="6rem" />
+        </div>
+      </Loading>
+    )
   if (isError || !lead) return <ErrorState message="Lead not found." onRetry={refetch} />
 
   return (

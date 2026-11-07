@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import styles from './Skeleton.module.css'
 
 /**
@@ -16,4 +17,14 @@ export function Skeleton({ lines = 3, className = '' }: { lines?: number; classN
 
 export function SkeletonBlock({ height = '10rem' }: { height?: string }) {
   return <span className={styles.block} style={{ height }} aria-hidden="true" />
+}
+
+/** Wraps skeleton placeholders and announces the loading state once to screen readers. */
+export function Loading({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div aria-busy="true">
+      <output className="visually-hidden">{label}</output>
+      {children}
+    </div>
+  )
 }

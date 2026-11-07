@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useParams, useSearchParams } from 'react-router'
 import { LEAD_STATUSES, type LeadListItem, type LeadStatus } from '@/shared/api/types'
-import { Spinner } from '@/shared/ui/Spinner'
+import { Loading, Skeleton } from '@/shared/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/shared/ui/StateViews'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { VirtualList } from '@/shared/ui/VirtualList'
@@ -103,7 +103,13 @@ export default function LeadsInboxPage() {
         </div>
         <div className={styles.listBody}>
           {isLoading ? (
-            <Spinner label="Loading leads" />
+            <Loading label="Loading leads">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className={styles.row} style={{ height: ROW_HEIGHT }}>
+                  <Skeleton lines={3} />
+                </div>
+              ))}
+            </Loading>
           ) : isError ? (
             <ErrorState message="Could not load leads." onRetry={refetch} />
           ) : !data?.length ? (

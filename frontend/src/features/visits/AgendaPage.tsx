@@ -4,6 +4,8 @@ import { useGetLeadQuery } from '@/features/leads'
 import type { Visit } from '@/shared/api/types'
 import { Spinner } from '@/shared/ui/Spinner'
 import { ErrorState } from '@/shared/ui/StateViews'
+import { Loading, SkeletonBlock } from '@/shared/ui/Skeleton'
+import { useToast } from '@/shared/ui/toastContext'
 import {
   addDays,
   DAY_END_HOUR,
@@ -40,6 +42,7 @@ export default function AgendaPage() {
   const [cancelError, setCancelError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   const [updateStatus] = useUpdateVisitStatusMutation()
+  const notify = useToast()
 
   const scheduling = params.get('schedule') === '1'
   const leadParam = Number(params.get('lead')) || null
@@ -60,6 +63,7 @@ export default function AgendaPage() {
       applyOptimistic({ type: 'cancel', id: visit.id })
       try {
         await updateStatus({ id: visit.id, status: 'canceled' }).unwrap()
+        notify(`Tour with ${visit.lead_name} canceled`)
       } catch {
         setCancelError(`Could not cancel the tour with ${visit.lead_name}. It's back on the agenda.`)
       }
@@ -128,19 +132,22 @@ export default function AgendaPage() {
             leadId={leadParam}
             defaultDate={defaultDate}
             onOptimisticAdd={(visit) => applyOptimistic({ type: 'add', visit })}
-            onScheduled={(visit) =>
+            onScheduled={(visit) => {
+              notify(`Tour booked with ${visit.lead_name}`)
               updateParams({
                 schedule: null,
                 lead: null,
                 week: toDateKey(startOfWeek(new Date(visit.starts_at))),
               })
-            }
+            }}
             onClose={() => updateParams({ schedule: null, lead: null })}
           />
         )}
 
         {isLoading ? (
-          <Spinner label="Loading agenda" />
+          <Loading label="Loading agenda">
+            <SkeletonBlock height="9rem" />
+          </Loading>
         ) : isError ? (
           <ErrorState message="Could not load the agenda." onRetry={refetch} />
         ) : (

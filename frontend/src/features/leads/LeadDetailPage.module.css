@@ -173,3 +173,8 @@
 .headerActions > a {
   text-align: center;
 }
+.loading {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}

@@ -2,6 +2,7 @@ import { useActionState, useState } from 'react'
 import { useSendMessageMutation } from './leadsApi'
 import styles from './LeadDetailPage.module.css'
 import { useReplySuggestion } from '@/features/assistant'
+import { useToast } from '@/shared/ui/toastContext'
 
 type SendState = { status: 'idle' } | { status: 'sent' } | { status: 'error'; message: string }
 
@@ -16,6 +17,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
   const [fromAi, setFromAi] = useState(false)
   const [sendMessage] = useSendMessageMutation()
   const suggestion = useReplySuggestion(leadId)
+  const notify = useToast()
   const { state } = suggestion
 
   const [sendState, formAction, isSending] = useActionState<SendState, FormData>(
@@ -27,6 +29,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
         setDraft('')
         setFromAi(false)
         suggestion.reset()
+        notify('Reply sent')
         return { status: 'sent' }
       } catch {
         return { status: 'error', message: 'Message not sent. Try again.' }
