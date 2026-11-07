@@ -1,5 +1,6 @@
 import { useOptimistic, useState, useTransition } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { CalendarPlus, CalendarSearch, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useGetLeadQuery } from '@/features/leads'
 import type { Visit } from '@/shared/api/types'
 import { Spinner } from '@/shared/ui/Spinner'
@@ -94,7 +95,7 @@ export default function AgendaPage() {
             aria-label="Previous week"
             onClick={() => updateParams({ week: toDateKey(addDays(weekStart, -7)) })}
           >
-            ←
+            <ChevronLeft aria-hidden="true" />
           </button>
           <button type="button" className="btn" onClick={() => updateParams({ week: null })}>
             This week
@@ -105,7 +106,7 @@ export default function AgendaPage() {
             aria-label="Next week"
             onClick={() => updateParams({ week: toDateKey(addDays(weekStart, 7)) })}
           >
-            →
+            <ChevronRight aria-hidden="true" />
           </button>
           {!scheduling && (
             <button
@@ -113,6 +114,7 @@ export default function AgendaPage() {
               className="btn btn-primary"
               onClick={() => updateParams({ schedule: '1' })}
             >
+              <CalendarPlus aria-hidden="true" />
               Schedule tour
             </button>
           )}
@@ -151,28 +153,42 @@ export default function AgendaPage() {
         ) : isError ? (
           <ErrorState message="Could not load the agenda." onRetry={refetch} />
         ) : (
-          <ol className={styles.week} aria-label="Week" aria-busy={isFetching}>
-            {days.map((day) => {
-              const key = toDateKey(day)
-              const dayVisits = visits.filter((visit) => toDateKey(new Date(visit.starts_at)) === key)
-              return (
-                <li key={key} className={styles.day} data-today={key === today}>
-                  <h2 className={styles.dayTitle}>
-                    <time dateTime={key}>{formatDay(day)}</time>
-                  </h2>
-                  {dayVisits.length === 0 ? (
-                    <p className={styles.empty}>No tours</p>
-                  ) : (
-                    <ul className={styles.visits} aria-label={`Tours on ${formatDay(day)}`}>
-                      {dayVisits.map((visit) => (
-                        <VisitCard key={visit.id} visit={visit} onCancel={cancel} />
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              )
-            })}
-          </ol>
+          <div className={styles.weekWrap}>
+            {visits.length === 0 && !isFetching && (
+              <NextTourHint
+                after={addDays(weekStart, 7)}
+                onJump={(date) => updateParams({ week: toDateKey(startOfWeek(date)) })}
+              />
+            )}
+            <ol className={styles.week} aria-label="Week" aria-busy={isFetching}>
+              {days.map((day) => {
+                const key = toDateKey(day)
+                const dayVisits = visits.filter((visit) => toDateKey(new Date(visit.starts_at)) === key)
+                return (
+                  <li
+                    key={key}
+                    className={styles.day}
+                    data-today={key === today}
+                    data-past={key < today}
+                  >
+                    <h2 className={styles.dayTitle}>
+                      <time dateTime={key}>{formatDay(day)}</time>
+                      {key === today && <span className={styles.todayPill}>Today</span>}
+                    </h2>
+                    {dayVisits.length === 0 ? (
+                      <p className={styles.empty}>No tours</p>
+                    ) : (
+                      <ul className={styles.visits} aria-label={`Tours on ${formatDay(day)}`}>
+                        {dayVisits.map((visit) => (
+                          <VisitCard key={visit.id} visit={visit} onCancel={cancel} />
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
+          </div>
         )}
       </div>
     </section>
@@ -203,10 +219,37 @@ function VisitCard({ visit, onCancel }: { visit: Visit; onCancel: (visit: Visit)
           onClick={() => onCancel(visit)}
           aria-label={`Cancel tour with ${visit.lead_name} at ${formatTime(visit.starts_at)}`}
         >
+          <X aria-hidden="true" />
           Cancel
         </button>
       )}
     </li>
+  )
+}
+
+const LOOKAHEAD_DAYS = 60
+
+/** On an empty week, point to the next booked tour instead of seven blank columns. */
+function NextTourHint({ after, onJump }: { after: Date; onJump: (date: Date) => void }) {
+  const range = { start: after.toISOString(), end: addDays(after, LOOKAHEAD_DAYS).toISOString() }
+  const { data } = useGetVisitsQuery(range)
+  const next = data?.find((visit) => visit.status === 'scheduled')
+
+  return (
+    <div className={styles.hint}>
+      <CalendarSearch aria-hidden="true" className={styles.hintIcon} />
+      <p>
+        <strong>No tours this week.</strong>{' '}
+        {next
+          ? `The next one is with ${next.lead_name} on ${formatDay(new Date(next.starts_at))}.`
+          : 'Book one from a lead or with Schedule tour.'}
+      </p>
+      {next && (
+        <button type="button" className="btn" onClick={() => onJump(new Date(next.starts_at))}>
+          Go to that week
+        </button>
+      )}
+    </div>
   )
 }
 
