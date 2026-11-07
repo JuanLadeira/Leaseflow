@@ -1,0 +1,29 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+.card {
+  width: 100%;
+  max-width: 24rem;
+  display: grid;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+}
+.title {
+  font-size: 1.5rem;
+}
+.subtitle,
+.hint {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+.alert {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--danger-bg);
+  color: var(--danger);
+}

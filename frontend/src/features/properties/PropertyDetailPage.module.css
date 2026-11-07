@@ -1,0 +1,55 @@
+.back {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+.layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+.table th,
+.table td {
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.form {
+  display: grid;
+  gap: 0.875rem;
+  padding: 1rem;
+  align-content: start;
+}
+.formTitle {
+  font-size: 1rem;
+}
+.formGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}
