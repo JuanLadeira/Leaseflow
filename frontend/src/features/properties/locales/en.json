@@ -1,0 +1,58 @@
+{
+  "list": {
+    "title": "Properties",
+    "count_one": "{{count}} property in your portfolio",
+    "count_other": "{{count}} properties in your portfolio",
+    "portfolio": "Your portfolio",
+    "search": "Search properties",
+    "searchPlaceholder": "Search by name, city or address",
+    "loading": "Loading properties",
+    "error": "Could not load properties.",
+    "empty": "No properties found",
+    "emptyBody": "Try a different search term.",
+    "units": "Units",
+    "vacant": "Vacant",
+    "occupancy": "Occupancy",
+    "occupancyLabel": "Occupancy {{value}}"
+  },
+  "detail": {
+    "loading": "Loading property",
+    "notFound": "Property not found.",
+    "back": "← All properties",
+    "summary_one": "{{count}} unit",
+    "summary_other": "{{count}} units",
+    "occupied": "{{value}} occupied",
+    "caption": "Units at {{name}}",
+    "unit": "Unit",
+    "bedsBaths": "Beds / Baths",
+    "sqft": "Sq ft",
+    "rent": "Rent",
+    "status": "Status",
+    "available": "Available",
+    "studio": "Studio",
+    "beds": "{{count}} bd",
+    "baths": "{{count}} ba"
+  },
+  "form": {
+    "title": "Add a unit",
+    "label": "Add unit",
+    "unit": "Unit",
+    "beds": "Beds",
+    "baths": "Baths",
+    "sqft": "Sq ft",
+    "rent": "Rent ($)",
+    "status": "Status",
+    "submit": "Add unit",
+    "saving": "Saving…",
+    "added": "Unit {{label}} added",
+    "saveError": "Could not save the unit. Is the label unique for this property?",
+    "errors": {
+      "required": "Required",
+      "tooLong": "Use 20 characters or fewer",
+      "wholeNumber": "Use a whole number",
+      "range": "Between 0 and 10",
+      "positive": "Must be greater than 0",
+      "rentPositive": "Rent must be greater than 0"
+    }
+  }
+}

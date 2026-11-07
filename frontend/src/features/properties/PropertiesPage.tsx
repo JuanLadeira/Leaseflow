@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { Building2, MapPin, Search } from 'lucide-react'
 import { Pagination } from '@/shared/ui/Pagination'
@@ -12,6 +13,7 @@ import styles from './PropertiesPage.module.css'
 const PAGE_SIZE = 6
 
 export default function PropertiesPage() {
+  const { t } = useTranslation('properties')
   // Search and page live in the URL so results are linkable and survive reloads.
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
@@ -35,19 +37,19 @@ export default function PropertiesPage() {
     <section aria-labelledby="properties-title">
       <div className="page-header">
         <div>
-          <h1 id="properties-title">Properties</h1>
-          <p>{data ? `${data.count} properties in your portfolio` : 'Your portfolio'}</p>
+          <h1 id="properties-title">{t('list.title')}</h1>
+          <p>{data ? t('list.count', { count: data.count }) : t('list.portfolio')}</p>
         </div>
         <div className={`field ${styles.search}`}>
           <Search aria-hidden="true" className={styles.searchIcon} />
           <label htmlFor="property-search" className="visually-hidden">
-            Search properties
+            {t('list.search')}
           </label>
           <input
             id="property-search"
             type="search"
             className="input"
-            placeholder="Search by name, city or address"
+            placeholder={t('list.searchPlaceholder')}
             value={search}
             onChange={(event) => {
               // A new search starts from page 1: done in the event handler, not in an effect.
@@ -59,7 +61,7 @@ export default function PropertiesPage() {
       </div>
 
       {isLoading ? (
-        <Loading label="Loading properties">
+        <Loading label={t('list.loading')}>
           <div className={styles.grid} aria-hidden="true">
             {Array.from({ length: PAGE_SIZE }, (_, i) => (
               <div key={i} className={`card ${styles.card}`}>
@@ -72,9 +74,9 @@ export default function PropertiesPage() {
           </div>
         </Loading>
       ) : isError ? (
-        <ErrorState message="Could not load properties." onRetry={refetch} />
+        <ErrorState message={t('list.error')} onRetry={refetch} />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState title="No properties found">Try a different search term.</EmptyState>
+        <EmptyState title={t('list.empty')}>{t('list.emptyBody')}</EmptyState>
       ) : (
         <>
           <ul className={styles.grid} aria-busy={isFetching}>
@@ -102,15 +104,15 @@ export default function PropertiesPage() {
                   </p>
                   <dl className={styles.stats}>
                     <div>
-                      <dt>Units</dt>
+                      <dt>{t('list.units')}</dt>
                       <dd>{property.unit_count}</dd>
                     </div>
                     <div>
-                      <dt>Vacant</dt>
+                      <dt>{t('list.vacant')}</dt>
                       <dd>{property.vacant_count}</dd>
                     </div>
                     <div>
-                      <dt>Occupancy</dt>
+                      <dt>{t('list.occupancy')}</dt>
                       <dd>{formatPercent(property.occupancy_rate)}</dd>
                     </div>
                   </dl>
@@ -122,7 +124,7 @@ export default function PropertiesPage() {
                     high={0.9}
                     optimum={1}
                     value={property.occupancy_rate}
-                    aria-label={`Occupancy ${formatPercent(property.occupancy_rate)}`}
+                    aria-label={t('list.occupancyLabel', { value: formatPercent(property.occupancy_rate) })}
                   />
                 </div>
               </li>

@@ -35,6 +35,12 @@ export const formatNumber = (value: number) => cached('number', (l) => new Intl.
 export const formatDateTime = (iso: string | Date) =>
   cached('datetime', (l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium', timeStyle: 'short' })).format(new Date(iso))
 
+/** A calendar date with no time ("2026-12-01"): parsed as local, not UTC, so it never shifts a day. */
+export const formatDate = (isoDate: string) => {
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number)
+  return cached('date', (l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium' })).format(new Date(y!, m! - 1, d))
+}
+
 export const formatTime = (iso: string | Date) =>
   cached('time', (l) => new Intl.DateTimeFormat(l, { hour: 'numeric', minute: '2-digit' })).format(new Date(iso))
 
