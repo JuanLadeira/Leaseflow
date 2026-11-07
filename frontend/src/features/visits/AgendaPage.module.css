@@ -45,7 +45,7 @@
   }
 }
 @media (min-width: 1400px) {
-  .week {
+  .layout[data-form-open='false'] .week {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }

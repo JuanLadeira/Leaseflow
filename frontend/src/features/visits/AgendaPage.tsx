@@ -4,7 +4,17 @@ import { useGetLeadQuery } from '@/features/leads'
 import type { Visit } from '@/shared/api/types'
 import { Spinner } from '@/shared/ui/Spinner'
 import { ErrorState } from '@/shared/ui/StateViews'
-import { addDays, formatDay, formatTime, fromDateKey, isDateKey, startOfWeek, toDateKey } from './dates'
+import {
+  addDays,
+  DAY_END_HOUR,
+  formatDay,
+  SLOT_MINUTES,
+  formatTime,
+  fromDateKey,
+  isDateKey,
+  startOfWeek,
+  toDateKey,
+} from './dates'
 import styles from './AgendaPage.module.css'
 import { ScheduleVisitForm } from './ScheduleVisitForm'
 import { useGetVisitsQuery, useUpdateVisitStatusMutation } from './visitsApi'
@@ -57,7 +67,12 @@ export default function AgendaPage() {
   }
 
   const today = toDateKey(now)
-  const defaultDate = today >= toDateKey(weekStart) ? today : toDateKey(weekStart)
+  // Book today while there's still a slot left, otherwise tomorrow; never before the shown week.
+  const lastSlot = new Date(now)
+  lastSlot.setHours(DAY_END_HOUR, -SLOT_MINUTES, 0, 0)
+  const firstBookable = toDateKey(now < lastSlot ? now : addDays(now, 1))
+  const defaultDate =
+    firstBookable >= toDateKey(weekStart) ? firstBookable : toDateKey(weekStart)
 
   return (
     <section aria-labelledby="agenda-title">

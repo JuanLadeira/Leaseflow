@@ -172,7 +172,7 @@ class Command(BaseCommand):
         )
 
     def _seed_visits(self, rng: random.Random, agent, leads: list[Lead]) -> list[Visit]:
-        """Tours for leads at the `tour_scheduled` stage over the next two weeks, on
+        """Tours for leads at the `tour_scheduled` stage over the next two weeks (from tomorrow), on
         30-minute business-hour slots, never double-booking a unit or the demo agent."""
         today = timezone.localdate()
         tz = timezone.get_current_timezone()
@@ -183,7 +183,7 @@ class Command(BaseCommand):
                 continue
             mine = rng.random() < 0.3
             for _ in range(10):  # a few attempts to find a free slot
-                day = today + timedelta(days=rng.randint(0, 13))
+                day = today + timedelta(days=rng.randint(1, 14))
                 if day.weekday() == 6:  # closed on Sundays
                     continue
                 slot = rng.randint(0, 17)  # 09:00 .. 17:30
