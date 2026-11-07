@@ -111,7 +111,18 @@ amenities, fees, discounts or policies. If something is unknown, offer to confir
 - Sign off as "The Leasing Team"."""
 
 
-def build_context(lead: dict) -> str:
+LANGUAGE_NAMES = {"en": "English", "pt": "Brazilian Portuguese"}
+
+
+def ui_language_name(accept_language: str | None) -> str | None:
+    """Map the agent's UI language (first Accept-Language tag) to a name the model understands."""
+    if not accept_language:
+        return None
+    primary = accept_language.split(",")[0].split(";")[0].strip().lower()
+    return LANGUAGE_NAMES.get(primary.split("-")[0])
+
+
+def build_context(lead: dict, ui_language: str | None = None) -> str:
     unit = lead.get("unit")
     lines = [f"Prospect: {lead['full_name']} (status: {lead['status']}, source: {lead['source']})"]
     if lead.get("desired_move_in"):
@@ -127,6 +138,10 @@ def build_context(lead: dict) -> str:
     for msg in lead["messages"]:
         who = "Prospect" if msg.direction == Message.Direction.INBOUND else "Agent"
         lines.append(f"{who}: {msg.body}")
+    if ui_language:
+        # The reply goes to the prospect, so their language wins; the agent's UI
+        # language only breaks the tie when the conversation doesn't show one.
+        lines.append(f"\nIf the prospect's language is unclear, write in {ui_language}.")
     lines.append("\nDraft the agent's next reply.")
     return "\n".join(lines)
 
@@ -161,12 +176,12 @@ def sse(event: str, data: dict) -> str:
 
 
 async def stream_reply_suggestion(
-    lead: dict, *, fallback_delay: float = 0.03
+    lead: dict, *, ui_language: str | None = None, fallback_delay: float = 0.03
 ) -> AsyncIterator[str]:
     """Yield SSE frames: `delta` (text chunk), then `done` or `error`."""
     use_llm = llm.is_configured()
     if use_llm:
-        chunks = llm.stream_text(SYSTEM_PROMPT, build_context(lead))
+        chunks = llm.stream_text(SYSTEM_PROMPT, build_context(lead, ui_language))
     else:
         chunks = _fallback_stream(lead, fallback_delay)
     try:
@@ -178,7 +193,9 @@ async def stream_reply_suggestion(
     yield sse("done", {"model": llm.model_name() if use_llm else "offline-template"})
 
 
-async def reply_suggestion_stream(lead_id: int) -> AsyncIterator[str]:
+async def reply_suggestion_stream(
+    lead_id: int, accept_language: str | None = None
+) -> AsyncIterator[str]:
     # Resolve the lead before streaming starts so a missing lead is a clean 404.
     lead = await get_lead_detail(lead_id)
-    return stream_reply_suggestion(lead)
+    return stream_reply_suggestion(lead, ui_language=ui_language_name(accept_language))
