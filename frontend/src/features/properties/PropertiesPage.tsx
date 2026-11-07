@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Pagination } from '@/shared/ui/Pagination'
 import { Spinner } from '@/shared/ui/Spinner'
@@ -66,8 +67,23 @@ export default function PropertiesPage() {
           <ul className={styles.grid} aria-busy={isFetching}>
             {data.items.map((property) => (
               <li key={property.id} className={`card ${styles.card}`}>
-                {property.image_url && (
+                {property.image_url ? (
                   <img src={property.image_url} alt="" loading="lazy" className={styles.image} />
+                ) : (
+                  // No photo: a deterministic gradient keeps cards distinct without external assets.
+                  <div
+                    className={styles.image}
+                    aria-hidden="true"
+                    style={{ '--hue': (property.id * 47) % 360 } as CSSProperties}
+                  >
+                    <span className={styles.initials}>
+                      {property.name
+                        .split(' ')
+                        .slice(0, 2)
+                        .map((word) => word[0])
+                        .join('')}
+                    </span>
+                  </div>
                 )}
                 <div className={styles.body}>
                   <h2 className={styles.name}>

@@ -9,7 +9,7 @@ import { formatRelative, LEAD_STATUS_LABEL } from '@/shared/lib/format'
 import { useGetLeadsQuery } from './leadsApi'
 import styles from './LeadsInboxPage.module.css'
 
-const ROW_HEIGHT = 88
+const ROW_HEIGHT = 104
 
 function isLeadStatus(value: string | null): value is LeadStatus {
   return LEAD_STATUSES.includes(value as LeadStatus)

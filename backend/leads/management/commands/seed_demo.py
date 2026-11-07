@@ -86,13 +86,12 @@ class Command(BaseCommand):
             return
 
         units: list[Unit] = []
-        for i, (name, address, city, state) in enumerate(PROPERTIES):
+        for name, address, city, state in PROPERTIES:
             prop = Property.objects.create(
                 name=name,
                 address=address,
                 city=city,
                 state=state,
-                image_url=f"https://picsum.photos/seed/leaseflow-{i}/640/360",
             )
             for floor in range(1, rng.randint(3, 5) + 1):
                 for letter in "ABC"[: rng.randint(2, 3)]:
