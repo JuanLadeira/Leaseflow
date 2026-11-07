@@ -165,3 +165,11 @@
     display: none;
   }
 }
+.headerActions {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+.headerActions > a {
+  text-align: center;
+}

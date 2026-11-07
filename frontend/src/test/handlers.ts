@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { API, demoUser, leadDetail, leads, pageOf, properties } from './fixtures'
+import { API, demoUser, leadDetail, leads, makeVisit, pageOf, properties, tomorrowAt } from './fixtures'
 
 /** Default happy-path API. Tests override single endpoints with server.use(...). */
 export const handlers = [
@@ -54,5 +54,25 @@ export const handlers = [
       },
     })
     return new HttpResponse(stream, { headers: { 'Content-Type': 'text/event-stream' } })
+  }),
+  http.get(`${API}/visits`, () => HttpResponse.json([makeVisit({ start: tomorrowAt(10) })])),
+  http.post(`${API}/visits`, async ({ request }) => {
+    const body = (await request.json()) as { lead_id: number; starts_at: string; notes: string }
+    return HttpResponse.json(
+      makeVisit({
+        id: 777,
+        lead_id: body.lead_id,
+        lead_name: 'Ava Smith',
+        agent_id: demoUser.id,
+        agent_name: 'Demo Agent',
+        start: new Date(body.starts_at),
+        notes: body.notes,
+      }),
+      { status: 201 },
+    )
+  }),
+  http.patch(`${API}/visits/:id`, async ({ request, params }) => {
+    const { status } = (await request.json()) as { status: 'canceled' }
+    return HttpResponse.json(makeVisit({ id: Number(params.id), start: tomorrowAt(10), status }))
   }),
 ]

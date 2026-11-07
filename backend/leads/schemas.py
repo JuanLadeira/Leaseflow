@@ -26,6 +26,7 @@ class LeadListOut(Schema):
     email: str
     status: Lead.Status
     source: Lead.Source
+    unit_id: int | None
     unit_label: str | None
     property_name: str | None
     last_message_preview: str

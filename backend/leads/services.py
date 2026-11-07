@@ -43,6 +43,7 @@ async def list_leads(status: str | None, search: str | None, limit: int) -> list
             "email": lead.email,
             "status": lead.status,
             "source": lead.source,
+            "unit_id": lead.unit_id,
             "unit_label": lead.unit.label if lead.unit else None,
             "property_name": lead.unit.property.name if lead.unit else None,
             "last_message_preview": lead.last_message_preview or "",

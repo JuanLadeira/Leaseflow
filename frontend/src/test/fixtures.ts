@@ -1,4 +1,4 @@
-import type { LeadDetail, LeadListItem, Page, Property, User } from '@/shared/api/types'
+import type { LeadDetail, LeadListItem, Page, Property, User, Visit } from '@/shared/api/types'
 
 export const API = 'http://localhost/api'
 
@@ -37,6 +37,7 @@ export const leads: LeadListItem[] = Array.from({ length: 300 }, (_, i) => ({
   email: `lead${i + 1}@example.com`,
   status: i % 3 === 0 ? 'new' : 'contacted',
   source: 'zillow',
+  unit_id: 7,
   unit_label: '1B',
   property_name: 'Maple Court',
   last_message_preview: 'Is the unit still available?',
@@ -64,4 +65,32 @@ export const leadDetail: LeadDetail = {
       created_at: '2026-11-01T10:00:00Z',
     },
   ],
+}
+
+/** Tomorrow at `hour`:00 local time: always bookable, whatever day the suite runs. */
+export function tomorrowAt(hour: number, minutes = 0): Date {
+  const date = new Date()
+  date.setDate(date.getDate() + 1)
+  date.setHours(hour, minutes, 0, 0)
+  return date
+}
+
+export function makeVisit(overrides: Partial<Visit> & { start: Date; minutes?: number }): Visit {
+  const { start, minutes = 30, ...rest } = overrides
+  return {
+    id: 501,
+    lead_id: 2,
+    lead_name: 'Leo King',
+    unit_id: 7,
+    unit_label: '1B',
+    property_id: 1,
+    property_name: 'Maple Court',
+    agent_id: 9,
+    agent_name: 'Sam Agent',
+    starts_at: start.toISOString(),
+    ends_at: new Date(start.getTime() + minutes * 60000).toISOString(),
+    status: 'scheduled',
+    notes: '',
+    ...rest,
+  }
 }
