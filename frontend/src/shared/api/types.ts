@@ -1,7 +1,8 @@
 // Mirrors the Django Ninja schemas (see backend/<app>/schemas.py).
 // Decimals are serialized as strings by the API to avoid float rounding.
 
-export type UnitStatus = 'vacant' | 'notice' | 'occupied'
+export const UNIT_STATUSES = ['vacant', 'notice', 'occupied'] as const
+export type UnitStatus = (typeof UNIT_STATUSES)[number]
 
 export const LEAD_STATUSES = [
   'new',

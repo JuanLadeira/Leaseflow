@@ -1,0 +1,61 @@
+{
+  "agenda": {
+    "title": "Agenda",
+    "summary_one": "Semana de {{week}} · {{count}} visita",
+    "summary_other": "Semana de {{week}} · {{count}} visitas",
+    "previousWeek": "Semana anterior",
+    "thisWeek": "Esta semana",
+    "nextWeek": "Próxima semana",
+    "schedule": "Agendar visita",
+    "loading": "Carregando agenda",
+    "error": "Não foi possível carregar a agenda.",
+    "week": "Semana",
+    "today": "Hoje",
+    "noTours": "Sem visitas",
+    "toursOn": "Visitas em {{day}}",
+    "canceled": "Visita com {{name}} cancelada",
+    "cancelError": "Não foi possível cancelar a visita com {{name}}. Ela voltou para a agenda.",
+    "booked": "Visita agendada com {{name}}",
+    "with": "com {{name}}",
+    "booking": "Agendando…",
+    "cancelLabel": "Cancelar visita com {{name}} às {{time}}",
+    "cancelTitle": "Cancelar visita",
+    "emptyWeek": "Nenhuma visita nesta semana.",
+    "nextOne": "A próxima é com {{name}} em {{day}}.",
+    "bookHint": "Agende a partir de um lead ou em Agendar visita.",
+    "jump": "Ir para essa semana",
+    "loadingLead": "Carregando lead"
+  },
+  "form": {
+    "title": "Agendar visita",
+    "close": "Fechar formulário",
+    "lead": "Lead",
+    "noUnit": "Sem unidade de interesse",
+    "change": "Trocar",
+    "searchLeads": "Buscar leads",
+    "searchPlaceholder": "Nome ou e-mail",
+    "matching": "Leads encontrados",
+    "noLeads": "Nenhum lead encontrado.",
+    "day": "Dia",
+    "duration": "Duração",
+    "minutes": "{{count}} min",
+    "time": "Horário",
+    "notes": "Observações",
+    "submit": "Agendar visita",
+    "submitting": "Agendando…",
+    "you": "Você",
+    "reason": {
+      "past": "já passou",
+      "unitBooked": "unidade ocupada",
+      "busy": "você está ocupado"
+    },
+    "errors": {
+      "pickLead": "Escolha um lead primeiro.",
+      "noUnit": "Este lead não tem unidade de interesse.",
+      "pickTime": "Escolha um horário.",
+      "taken": "Esse horário acabou de ser reservado.",
+      "invalid": "Não foi possível agendar esta visita.",
+      "failed": "Não foi possível agendar a visita. Tente novamente."
+    }
+  }
+}

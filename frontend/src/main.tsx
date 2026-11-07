@@ -5,6 +5,7 @@ import { AppProviders } from '@/app/providers'
 import { createAppRouter } from '@/app/router'
 import { makeStore } from '@/app/store'
 import '@fontsource-variable/inter'
+import '@/app/i18n'
 import '@/shared/theme/tokens.css'
 
 const store = makeStore()

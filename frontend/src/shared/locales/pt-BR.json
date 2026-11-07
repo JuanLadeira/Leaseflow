@@ -1,0 +1,56 @@
+{
+  "language": {
+    "label": "Idioma"
+  },
+  "leadStatus": {
+    "new": "Novo",
+    "contacted": "Contatado",
+    "tour_scheduled": "Visita agendada",
+    "applied": "Proposta enviada",
+    "won": "Fechado",
+    "lost": "Perdido"
+  },
+  "unitStatus": {
+    "vacant": "Vaga",
+    "notice": "Em aviso prévio",
+    "occupied": "Ocupada"
+  },
+  "leadSource": {
+    "website": "Site",
+    "zillow": "Zillow",
+    "apartments_com": "Apartments.com",
+    "referral": "Indicação",
+    "walk_in": "Visita espontânea"
+  },
+  "nav": {
+    "skip": "Pular para o conteúdo",
+    "open": "Abrir navegação",
+    "close": "Fechar navegação",
+    "main": "Principal",
+    "workspace": "Área de trabalho",
+    "dashboard": "Painel",
+    "properties": "Imóveis",
+    "leads": "Leads",
+    "agenda": "Agenda"
+  },
+  "theme": {
+    "toDark": "Mudar para tema escuro",
+    "toLight": "Mudar para tema claro"
+  },
+  "auth": {
+    "signOut": "Sair",
+    "restoring": "Restaurando sua sessão"
+  },
+  "actions": {
+    "tryAgain": "Tentar novamente",
+    "dismiss": "Fechar notificação",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "cancel": "Cancelar"
+  },
+  "pagination": {
+    "label": "Paginação",
+    "page": "Página {{page}} de {{pages}}"
+  },
+  "loading": "Carregando"
+}

@@ -1,0 +1,58 @@
+{
+  "list": {
+    "title": "Imóveis",
+    "count_one": "{{count}} imóvel na sua carteira",
+    "count_other": "{{count}} imóveis na sua carteira",
+    "portfolio": "Sua carteira",
+    "search": "Buscar imóveis",
+    "searchPlaceholder": "Busque por nome, cidade ou endereço",
+    "loading": "Carregando imóveis",
+    "error": "Não foi possível carregar os imóveis.",
+    "empty": "Nenhum imóvel encontrado",
+    "emptyBody": "Tente outro termo de busca.",
+    "units": "Unidades",
+    "vacant": "Vagas",
+    "occupancy": "Ocupação",
+    "occupancyLabel": "Ocupação {{value}}"
+  },
+  "detail": {
+    "loading": "Carregando imóvel",
+    "notFound": "Imóvel não encontrado.",
+    "back": "← Todos os imóveis",
+    "summary_one": "{{count}} unidade",
+    "summary_other": "{{count}} unidades",
+    "occupied": "{{value}} ocupado",
+    "caption": "Unidades em {{name}}",
+    "unit": "Unidade",
+    "bedsBaths": "Quartos / Banheiros",
+    "sqft": "Pés²",
+    "rent": "Aluguel",
+    "status": "Status",
+    "available": "Disponível em",
+    "studio": "Studio",
+    "beds": "{{count}} qt",
+    "baths": "{{count}} bh"
+  },
+  "form": {
+    "title": "Adicionar unidade",
+    "label": "Adicionar unidade",
+    "unit": "Unidade",
+    "beds": "Quartos",
+    "baths": "Banheiros",
+    "sqft": "Pés²",
+    "rent": "Aluguel (US$)",
+    "status": "Status",
+    "submit": "Adicionar unidade",
+    "saving": "Salvando…",
+    "added": "Unidade {{label}} adicionada",
+    "saveError": "Não foi possível salvar a unidade. O nome já existe neste imóvel?",
+    "errors": {
+      "required": "Obrigatório",
+      "tooLong": "Use no máximo 20 caracteres",
+      "wholeNumber": "Use um número inteiro",
+      "range": "Entre 0 e 10",
+      "positive": "Deve ser maior que 0",
+      "rentPositive": "O aluguel deve ser maior que 0"
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "agenda": {
+    "title": "Agenda",
+    "summary_one": "Week of {{week}} · {{count}} tour",
+    "summary_other": "Week of {{week}} · {{count}} tours",
+    "previousWeek": "Previous week",
+    "thisWeek": "This week",
+    "nextWeek": "Next week",
+    "schedule": "Schedule tour",
+    "loading": "Loading agenda",
+    "error": "Could not load the agenda.",
+    "week": "Week",
+    "today": "Today",
+    "noTours": "No tours",
+    "toursOn": "Tours on {{day}}",
+    "canceled": "Tour with {{name}} canceled",
+    "cancelError": "Could not cancel the tour with {{name}}. It's back on the agenda.",
+    "booked": "Tour booked with {{name}}",
+    "with": "with {{name}}",
+    "booking": "Booking…",
+    "cancelLabel": "Cancel tour with {{name}} at {{time}}",
+    "cancelTitle": "Cancel tour",
+    "emptyWeek": "No tours this week.",
+    "nextOne": "The next one is with {{name}} on {{day}}.",
+    "bookHint": "Book one from a lead or with Schedule tour.",
+    "jump": "Go to that week",
+    "loadingLead": "Loading lead"
+  },
+  "form": {
+    "title": "Schedule a tour",
+    "close": "Close form",
+    "lead": "Lead",
+    "noUnit": "No unit of interest",
+    "change": "Change",
+    "searchLeads": "Search leads",
+    "searchPlaceholder": "Name or email",
+    "matching": "Matching leads",
+    "noLeads": "No leads found.",
+    "day": "Day",
+    "duration": "Duration",
+    "minutes": "{{count}} min",
+    "time": "Time",
+    "notes": "Notes",
+    "submit": "Book tour",
+    "submitting": "Booking…",
+    "you": "You",
+    "reason": {
+      "past": "past",
+      "unitBooked": "unit booked",
+      "busy": "you are busy"
+    },
+    "errors": {
+      "pickLead": "Pick a lead first.",
+      "noUnit": "This lead has no unit of interest.",
+      "pickTime": "Pick a time slot.",
+      "taken": "That slot was just taken.",
+      "invalid": "Could not book this visit.",
+      "failed": "Could not book the visit. Try again."
+    }
+  }
+}

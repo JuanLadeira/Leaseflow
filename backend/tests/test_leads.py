@@ -3,7 +3,7 @@ import json
 import pytest
 
 from leads.models import Lead, Message
-from leads.services import build_context, fallback_reply
+from leads.services import build_context, fallback_reply, ui_language_name
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -99,3 +99,12 @@ def test_prompt_context_contains_facts_only_from_db():
     assert "Maple Court, unit 1B, rent $1900/month" in ctx
     assert "Prospect: Do you allow cats?" in ctx
     assert fallback_reply(lead).startswith("Hi Ava")
+    assert "language is unclear" not in ctx
+    assert "write in Brazilian Portuguese" in build_context(lead, "Brazilian Portuguese")
+
+
+def test_ui_language_name_reads_the_first_accept_language_tag():
+    assert ui_language_name("pt-BR,pt;q=0.9,en;q=0.8") == "Brazilian Portuguese"
+    assert ui_language_name("en-US") == "English"
+    assert ui_language_name("fr-FR") is None
+    assert ui_language_name(None) is None

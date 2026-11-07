@@ -1,0 +1,36 @@
+{
+  "title": "Painel",
+  "subtitle": "Saúde da carteira e funil de locação num relance.",
+  "replyNew": "Responder novos leads",
+  "loading": "Carregando painel",
+  "error": "Não foi possível carregar as métricas.",
+  "stats": {
+    "occupancy": "Ocupação",
+    "occupancyHint": "{{occupied}} de {{total}} unidades alugadas",
+    "vacant": "Unidades vagas",
+    "vacantHint": "Prontas para alugar",
+    "open": "Leads em aberto",
+    "openHint": "{{new}} novos · {{contacted}} contatados",
+    "conversion": "Conversão de leads",
+    "conversionHint": "{{won}} fechados de {{total}} leads"
+  },
+  "funnel": {
+    "title": "Leads por etapa",
+    "total_one": "{{count}} lead no funil",
+    "total_other": "{{count}} leads no funil"
+  },
+  "tours": {
+    "title": "Próximas visitas",
+    "open": "Abrir agenda",
+    "error": "Não foi possível carregar as visitas.",
+    "empty": "Nenhuma visita nos próximos 7 dias",
+    "schedule": "Agendar visita"
+  },
+  "awaiting": {
+    "title": "Aguardando resposta",
+    "viewAll": "Ver todos",
+    "error": "Não foi possível carregar os leads.",
+    "empty": "Caixa zerada",
+    "emptyBody": "Todo lead novo já tem resposta."
+  }
+}

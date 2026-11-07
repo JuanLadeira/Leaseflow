@@ -13,14 +13,23 @@ import {
 } from 'lucide-react'
 import { useAuth, useAuthActions } from '@/shared/auth/AuthContext'
 import { useTheme } from '@/shared/theme/ThemeContext'
+import { LanguageSwitcher } from '@/shared/i18n/LanguageSwitcher'
 import { Logo } from '@/shared/ui/Logo'
 import styles from './Layout.module.css'
+import { useTranslation } from 'react-i18next'
 
-const NAV = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/properties', label: 'Properties', icon: Building2 },
-  { to: '/leads', label: 'Leads', icon: MessagesSquare },
-  { to: '/visits', label: 'Agenda', icon: CalendarDays },
+type NavItem = {
+  to: string
+  label: `nav.${'dashboard' | 'properties' | 'leads' | 'agenda'}`
+  icon: typeof LayoutDashboard
+  end?: boolean
+}
+
+const NAV: NavItem[] = [
+  { to: '/', label: 'nav.dashboard', icon: LayoutDashboard, end: true },
+  { to: '/properties', label: 'nav.properties', icon: Building2 },
+  { to: '/leads', label: 'nav.leads', icon: MessagesSquare },
+  { to: '/visits', label: 'nav.agenda', icon: CalendarDays },
 ]
 
 function initials(name: string) {
@@ -33,6 +42,7 @@ function initials(name: string) {
 }
 
 export function Layout() {
+  const { t } = useTranslation()
   const auth = useAuth()
   const { logout } = useAuthActions()
   const { theme, toggleTheme } = useTheme()
@@ -61,14 +71,14 @@ export function Layout() {
   return (
     <div className={styles.shell} data-nav-open={navOpen ? 'true' : 'false'}>
       <a href="#main" className="skip-link">
-        Skip to content
+        {t('nav.skip')}
       </a>
 
       <header className={styles.topbar}>
         <button
           type="button"
           className="btn btn-ghost"
-          aria-label="Open navigation"
+          aria-label={t('nav.open')}
           aria-expanded={navOpen}
           aria-controls="sidebar"
           onClick={() => setNavOpen(true)}
@@ -86,15 +96,15 @@ export function Layout() {
           <button
             type="button"
             className={`btn btn-ghost ${styles.close}`}
-            aria-label="Close navigation"
+            aria-label={t('nav.close')}
             onClick={() => setNavOpen(false)}
           >
             <X aria-hidden="true" />
           </button>
         </div>
 
-        <nav aria-label="Main" className={styles.nav}>
-          <span className={styles.navLabel}>Workspace</span>
+        <nav aria-label={t('nav.main')} className={styles.nav}>
+          <span className={styles.navLabel}>{t('nav.workspace')}</span>
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -103,7 +113,7 @@ export function Layout() {
               className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
             >
               <Icon aria-hidden="true" className={styles.linkIcon} />
-              {label}
+              {t(label)}
             </NavLink>
           ))}
         </nav>
@@ -121,18 +131,19 @@ export function Layout() {
             </div>
           )}
           <div className={styles.footerActions}>
+            <LanguageSwitcher />
             <button
               type="button"
               className="btn btn-ghost"
               onClick={toggleTheme}
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+              aria-label={theme === 'light' ? t('theme.toDark') : t('theme.toLight')}
+              title={theme === 'light' ? t('theme.toDark') : t('theme.toLight')}
             >
               {theme === 'light' ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
             </button>
-            <button type="button" className="btn btn-ghost" onClick={logout} title="Sign out">
+            <button type="button" className="btn btn-ghost" onClick={logout} title={t('auth.signOut')}>
               <LogOut aria-hidden="true" />
-              Sign out
+              {t('auth.signOut')}
             </button>
           </div>
         </div>

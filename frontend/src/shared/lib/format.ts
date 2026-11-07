@@ -1,15 +1,54 @@
 import type { LeadSource, LeadStatus, UnitStatus } from '@/shared/api/types'
+import { i18n } from '@/shared/i18n'
+import { currentLocale } from '@/shared/i18n/locale'
 
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-})
-export const formatCurrency = (value: string | number) => currency.format(Number(value))
-export const formatPercent = (ratio: number) => `${Math.round(ratio * 100)}%`
+/**
+ * Intl formatters follow the active UI language. Building one is not free,
+ * so each is cached per locale + options.
+ */
+const cache = new Map<string, Intl.NumberFormat | Intl.DateTimeFormat | Intl.RelativeTimeFormat>()
+function cached<T extends Intl.NumberFormat | Intl.DateTimeFormat | Intl.RelativeTimeFormat>(
+  key: string,
+  build: (locale: string) => T,
+): T {
+  const locale = currentLocale()
+  const id = `${key}|${locale}`
+  let formatter = cache.get(id) as T | undefined
+  if (!formatter) {
+    formatter = build(locale)
+    cache.set(id, formatter)
+  }
+  return formatter
+}
 
-const relative = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+/** Rent is a property fact: always USD. Only the way it's written follows the locale. */
+export const formatCurrency = (value: string | number) =>
+  cached('currency', (l) => new Intl.NumberFormat(l, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })).format(
+    Number(value),
+  )
+
+export const formatPercent = (ratio: number) =>
+  cached('percent', (l) => new Intl.NumberFormat(l, { style: 'percent', maximumFractionDigits: 0 })).format(ratio)
+
+export const formatNumber = (value: number) => cached('number', (l) => new Intl.NumberFormat(l)).format(value)
+
+export const formatDateTime = (iso: string | Date) =>
+  cached('datetime', (l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium', timeStyle: 'short' })).format(new Date(iso))
+
+/** A calendar date with no time ("2026-12-01"): parsed as local, not UTC, so it never shifts a day. */
+export const formatDate = (isoDate: string) => {
+  const [y, m, d] = isoDate.slice(0, 10).split('-').map(Number)
+  return cached('date', (l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium' })).format(new Date(y!, m! - 1, d))
+}
+
+export const formatTime = (iso: string | Date) =>
+  cached('time', (l) => new Intl.DateTimeFormat(l, { hour: 'numeric', minute: '2-digit' })).format(new Date(iso))
+
+export const formatDay = (date: Date) =>
+  cached('day', (l) => new Intl.DateTimeFormat(l, { weekday: 'short', month: 'short', day: 'numeric' })).format(date)
+
 export function formatRelative(iso: string, now = Date.now()): string {
+  const relative = cached('relative', (l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }))
   const minutes = Math.round((new Date(iso).getTime() - now) / 60000)
   if (Math.abs(minutes) < 60) return relative.format(minutes, 'minute')
   const hours = Math.round(minutes / 60)
@@ -17,39 +56,40 @@ export function formatRelative(iso: string, now = Date.now()): string {
   return relative.format(Math.round(hours / 24), 'day')
 }
 
-const shortTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
-export const formatTime = (iso: string) => shortTime.format(new Date(iso))
+/** "9:00 – 9:30 AM" / "09:00 – 09:30": Intl collapses the shared parts per locale. */
+export const formatTimeRange = (start: string | Date, end: string | Date) =>
+  cached('time', (l) => new Intl.DateTimeFormat(l, { hour: 'numeric', minute: '2-digit' })).formatRange(
+    new Date(start),
+    new Date(end),
+  )
 
-const dayHeading = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-/** "Today", "Yesterday" or "Monday, Nov 2" for a conversation day separator. */
+const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase(currentLocale()) + text.slice(1)
+
+/** "Today", "Yesterday" or "Monday, Nov 2" for a conversation day separator (words come from Intl). */
 export function formatDayHeading(iso: string, now = new Date()): string {
   const date = new Date(iso)
   const yesterday = new Date(now)
   yesterday.setDate(now.getDate() - 1)
-  if (date.toDateString() === now.toDateString()) return 'Today'
-  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
-  return dayHeading.format(date)
+  const relative = cached('relative', (l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }))
+  if (date.toDateString() === now.toDateString()) return capitalize(relative.format(0, 'day'))
+  if (date.toDateString() === yesterday.toDateString()) return capitalize(relative.format(-1, 'day'))
+  return capitalize(
+    cached('dayHeading', (l) => new Intl.DateTimeFormat(l, { weekday: 'long', month: 'short', day: 'numeric' })).format(date),
+  )
 }
 
-export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
-  new: 'New',
-  contacted: 'Contacted',
-  tour_scheduled: 'Tour scheduled',
-  applied: 'Applied',
-  won: 'Won',
-  lost: 'Lost',
+/** "Today", "Tomorrow" or "Tue, Nov 10" for an upcoming event (words come from Intl). */
+export function formatUpcomingDay(iso: string, now = new Date()): string {
+  const date = new Date(iso)
+  const tomorrow = new Date(now)
+  tomorrow.setDate(now.getDate() + 1)
+  const relative = cached('relative', (l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }))
+  if (date.toDateString() === now.toDateString()) return capitalize(relative.format(0, 'day'))
+  if (date.toDateString() === tomorrow.toDateString()) return capitalize(relative.format(1, 'day'))
+  return formatDay(date)
 }
 
-export const UNIT_STATUS_LABEL: Record<UnitStatus, string> = {
-  vacant: 'Vacant',
-  notice: 'On notice',
-  occupied: 'Occupied',
-}
-
-export const LEAD_SOURCE_LABEL: Record<LeadSource, string> = {
-  website: 'Website',
-  zillow: 'Zillow',
-  apartments_com: 'Apartments.com',
-  referral: 'Referral',
-  walk_in: 'Walk-in',
-}
+// Status codes come from the API; their labels live in the `common` namespace.
+export const leadStatusLabel = (status: LeadStatus) => i18n.t(`leadStatus.${status}`)
+export const unitStatusLabel = (status: UnitStatus) => i18n.t(`unitStatus.${status}`)
+export const leadSourceLabel = (source: LeadSource) => i18n.t(`leadSource.${source}`)

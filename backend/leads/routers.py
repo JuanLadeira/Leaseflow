@@ -39,7 +39,7 @@ async def send_message(request, lead_id: int, payload: MessageIn):
 @router.post("/leads/{lead_id}/reply-suggestion", response={404: ErrorOut})
 async def reply_suggestion(request, lead_id: int):
     """Stream an AI-drafted reply as Server-Sent Events (`delta`, `done`, `error`)."""
-    stream = await services.reply_suggestion_stream(lead_id)
+    stream = await services.reply_suggestion_stream(lead_id, request.headers.get("Accept-Language"))
     response = StreamingHttpResponse(stream, content_type="text/event-stream")
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"  # disable proxy buffering (nginx)

@@ -1,6 +1,7 @@
 import { useOptimistic, useState, useTransition } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LEAD_STATUSES, type LeadStatus } from '@/shared/api/types'
-import { LEAD_STATUS_LABEL } from '@/shared/lib/format'
+import { leadStatusLabel } from '@/shared/lib/format'
 import { useToast } from '@/shared/ui/toastContext'
 import { useUpdateLeadStatusMutation } from './leadsApi'
 
@@ -10,6 +11,7 @@ import { useUpdateLeadStatusMutation } from './leadsApi'
  * value and shows the server value: the new one on success, the old one on failure.
  */
 export function LeadStatusSelect({ leadId, status }: { leadId: number; status: LeadStatus }) {
+  const { t } = useTranslation('leads')
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(status)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -22,16 +24,16 @@ export function LeadStatusSelect({ leadId, status }: { leadId: number; status: L
       setOptimisticStatus(next)
       try {
         await updateStatus({ id: leadId, status: next }).unwrap()
-        notify(`Moved to ${LEAD_STATUS_LABEL[next]}`)
+        notify(t('status.moved', { status: leadStatusLabel(next) }))
       } catch {
-        setError('Could not update the status. Reverted.')
+        setError(t('status.error'))
       }
     })
   }
 
   return (
     <div className="field">
-      <label htmlFor="lead-status">Pipeline status</label>
+      <label htmlFor="lead-status">{t('status.label')}</label>
       <select
         id="lead-status"
         className="select"
@@ -41,7 +43,7 @@ export function LeadStatusSelect({ leadId, status }: { leadId: number; status: L
       >
         {LEAD_STATUSES.map((value) => (
           <option key={value} value={value}>
-            {LEAD_STATUS_LABEL[value]}
+            {leadStatusLabel(value)}
           </option>
         ))}
       </select>

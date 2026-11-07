@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "usernameRequired": "Username is required",
+    "passwordMin": "Password must be at least 8 characters",
+    "invalidCredentials": "Invalid username or password.",
+    "unreachable": "Could not reach the server. Please try again in a moment."
+  },
+  "pitch": {
+    "label": "About Leaseflow",
+    "eyebrow": "Leasing, on autopilot",
+    "headline": "Turn every rental inquiry into a signed lease.",
+    "inbox": "One inbox for every lead, from Zillow to walk-ins",
+    "ai": "AI drafts replies with the unit, rent and availability",
+    "tours": "Book tours without double-booking a unit or agent"
+  },
+  "form": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to manage properties and leads.",
+    "demo": "Explore with the demo account",
+    "or": "or sign in",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "waking": "Waking up the demo server. Free hosting sleeps when idle, so the first sign-in can take up to a minute.",
+    "demoHint": "Demo account:"
+  }
+}
