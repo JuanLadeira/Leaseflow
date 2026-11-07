@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { formatCurrency, formatDateTime, formatPercent, leadStatusLabel } from '@/shared/lib/format'
 import { i18n, LanguageSwitcher } from '@/shared/i18n'
+import { renderApp } from '@/test/utils'
 import { LANGUAGE_STORAGE_KEY } from '@/shared/i18n/languages'
 import { resources } from './resources'
 
@@ -53,5 +54,18 @@ describe('locale-aware formatting', () => {
     expect(formatDateTime(date)).toMatch(/Nov 10, 2026/)
     await i18n.changeLanguage('pt-BR')
     expect(formatDateTime(date)).toMatch(/10 de nov\.? de 2026/)
+  })
+})
+
+describe('switching language in the app', () => {
+  it('translates the whole shell and the current page without a reload', async () => {
+    const { user } = renderApp('/')
+    expect(await screen.findByRole('heading', { name: 'Dashboard', level: 1 })).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Language'), 'pt-BR')
+
+    expect(await screen.findByRole('heading', { name: 'Painel', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Imóveis' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument()
   })
 })

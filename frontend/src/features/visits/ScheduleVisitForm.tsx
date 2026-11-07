@@ -1,6 +1,8 @@
 import { useActionState, useReducer, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGetLeadsQuery } from '@/features/leads'
 import type { ApiError, Visit, VisitConflict } from '@/shared/api/types'
+import { i18n } from '@/shared/i18n'
 import { useAuth } from '@/shared/auth/AuthContext'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import {
@@ -30,12 +32,17 @@ interface Props {
   onClose: () => void
 }
 
+/**
+ * The API explains conflicts in English ("Unit 2B already has a visit…"). Show that
+ * detail to English users; other languages get a translated message keyed by status.
+ */
 function errorMessage(error: unknown): { message: string; conflict: boolean } {
   const err = error as { status?: number; data?: ApiError | VisitConflict }
-  if (err?.status === 409) return { message: err.data?.detail ?? 'That slot was just taken.', conflict: true }
+  const detail = i18n.resolvedLanguage === 'en' ? err?.data?.detail : undefined
+  if (err?.status === 409) return { message: detail ?? i18n.t('visits:form.errors.taken'), conflict: true }
   if (err?.status === 400 || err?.status === 404)
-    return { message: err.data?.detail ?? 'Could not book this visit.', conflict: false }
-  return { message: 'Could not book the visit. Try again.', conflict: false }
+    return { message: detail ?? i18n.t('visits:form.errors.invalid'), conflict: false }
+  return { message: i18n.t('visits:form.errors.failed'), conflict: false }
 }
 
 /**
@@ -53,6 +60,7 @@ export function ScheduleVisitForm({
   onScheduled,
   onClose,
 }: Props) {
+  const { t } = useTranslation('visits')
   const [state, dispatch] = useReducer(scheduleReducer, undefined, () =>
     initialSchedule(defaultDate, initialLead),
   )
@@ -81,11 +89,11 @@ export function ScheduleVisitForm({
     )
     const reason =
       start < now
-        ? 'past'
+        ? t('form.reason.past')
         : clash
           ? clash.unit_id === state.lead?.unitId
-            ? 'unit booked'
-            : 'you are busy'
+            ? t('form.reason.unitBooked')
+            : t('form.reason.busy')
           : null
     return { time, label: formatTime(start), reason }
   })
@@ -93,9 +101,9 @@ export function ScheduleVisitForm({
   const [submit, formAction, isPending] = useActionState<SubmitState, FormData>(
     async (_previous, formData) => {
       const { lead, time } = state
-      if (!lead) return { status: 'error', message: 'Pick a lead first.' }
-      if (!lead.unitId) return { status: 'error', message: 'This lead has no unit of interest.' }
-      if (!time) return { status: 'error', message: 'Pick a time slot.' }
+      if (!lead) return { status: 'error', message: t('form.errors.pickLead') }
+      if (!lead.unitId) return { status: 'error', message: t('form.errors.noUnit') }
+      if (!time) return { status: 'error', message: t('form.errors.pickTime') }
 
       const start = atTime(state.date, time)
       const end = addMinutes(start, state.duration)
@@ -109,7 +117,7 @@ export function ScheduleVisitForm({
         property_id: 0,
         property_name: lead.propertyName ?? '',
         agent_id: user?.id ?? null,
-        agent_name: 'You',
+        agent_name: t('form.you'),
         starts_at: start.toISOString(),
         ends_at: end.toISOString(),
         status: 'scheduled',
@@ -141,15 +149,15 @@ export function ScheduleVisitForm({
     <form action={formAction} className={`card ${styles.form}`} aria-labelledby="schedule-title">
       <div className={styles.formHeader}>
         <h2 id="schedule-title" className={styles.formTitle}>
-          Schedule a tour
+          {t('form.title')}
         </h2>
-        <button type="button" className="btn btn-ghost" onClick={onClose} aria-label="Close form">
+        <button type="button" className="btn btn-ghost" onClick={onClose} aria-label={t('form.close')}>
           ✕
         </button>
       </div>
 
       <fieldset className={styles.fieldset}>
-        <legend>Lead</legend>
+        <legend>{t('form.lead')}</legend>
         {state.lead ? (
           <div className={styles.picked}>
             <div>
@@ -157,27 +165,27 @@ export function ScheduleVisitForm({
               <span className={styles.muted}>
                 {state.lead.unitLabel
                   ? `${state.lead.propertyName} · ${state.lead.unitLabel}`
-                  : 'No unit of interest'}
+                  : t('form.noUnit')}
               </span>
             </div>
             <button type="button" className="btn" onClick={() => dispatch({ type: 'leadCleared' })}>
-              Change
+              {t('form.change')}
             </button>
           </div>
         ) : (
           <div className="field">
-            <label htmlFor="lead-search">Search leads</label>
+            <label htmlFor="lead-search">{t('form.searchLeads')}</label>
             <input
               id="lead-search"
               className="input"
               type="search"
               autoComplete="off"
-              placeholder="Name or email"
+              placeholder={t('form.searchPlaceholder')}
               value={state.leadQuery}
               onChange={(event) => dispatch({ type: 'leadQueryChanged', query: event.target.value })}
             />
             {search && (
-              <ul className={styles.results} aria-label="Matching leads">
+              <ul className={styles.results} aria-label={t('form.matching')}>
                 {(leadResults.data ?? []).slice(0, 6).map((lead) => (
                   <li key={lead.id}>
                     <button
@@ -203,7 +211,7 @@ export function ScheduleVisitForm({
                     </button>
                   </li>
                 ))}
-                {leadResults.data?.length === 0 && <li className={styles.muted}>No leads found.</li>}
+                {leadResults.data?.length === 0 && <li className={styles.muted}>{t('form.noLeads')}</li>}
               </ul>
             )}
           </div>
@@ -212,7 +220,7 @@ export function ScheduleVisitForm({
 
       <div className={styles.row}>
         <div className="field">
-          <label htmlFor="visit-date">Day</label>
+          <label htmlFor="visit-date">{t('form.day')}</label>
           <input
             id="visit-date"
             className="input"
@@ -225,7 +233,7 @@ export function ScheduleVisitForm({
           />
         </div>
         <div className="field">
-          <label htmlFor="visit-duration">Duration</label>
+          <label htmlFor="visit-duration">{t('form.duration')}</label>
           <select
             id="visit-duration"
             className="select"
@@ -236,7 +244,7 @@ export function ScheduleVisitForm({
           >
             {DURATIONS.map((minutes) => (
               <option key={minutes} value={minutes}>
-                {minutes} min
+                {t('form.minutes', { count: minutes })}
               </option>
             ))}
           </select>
@@ -244,7 +252,7 @@ export function ScheduleVisitForm({
       </div>
 
       <fieldset className={styles.fieldset} aria-busy={dayVisits.isFetching}>
-        <legend>Time</legend>
+        <legend>{t('form.time')}</legend>
         <div className={styles.slots}>
           {slots.map((slot) => (
             <button
@@ -264,7 +272,7 @@ export function ScheduleVisitForm({
       </fieldset>
 
       <div className="field">
-        <label htmlFor="visit-notes">Notes</label>
+        <label htmlFor="visit-notes">{t('form.notes')}</label>
         <textarea id="visit-notes" name="notes" className="textarea" maxLength={1000} rows={2} />
       </div>
 
@@ -274,7 +282,7 @@ export function ScheduleVisitForm({
         </p>
       )}
       <button type="submit" className="btn btn-primary" disabled={isPending}>
-        {isPending ? 'Booking…' : 'Book tour'}
+        {isPending ? t('form.submitting') : t('form.submit')}
       </button>
     </form>
   )

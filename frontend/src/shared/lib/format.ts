@@ -93,10 +93,3 @@ export function formatUpcomingDay(iso: string, now = new Date()): string {
 export const leadStatusLabel = (status: LeadStatus) => i18n.t(`leadStatus.${status}`)
 export const unitStatusLabel = (status: UnitStatus) => i18n.t(`unitStatus.${status}`)
 export const leadSourceLabel = (source: LeadSource) => i18n.t(`leadSource.${source}`)
-
-/** @deprecated Pre-i18n maps, kept until each feature moves to `t()`. Removed in the extraction commits. */
-const legacy = <K extends string>(label: (key: K) => string) =>
-  new Proxy({} as Record<K, string>, { get: (_, key) => label(key as K) })
-export const LEAD_STATUS_LABEL = legacy(leadStatusLabel)
-export const UNIT_STATUS_LABEL = legacy(unitStatusLabel)
-export const LEAD_SOURCE_LABEL = legacy(leadSourceLabel)
