@@ -1,4 +1,7 @@
 import { screen } from '@testing-library/react'
+import { http, HttpResponse } from 'msw'
+import { API } from '@/test/fixtures'
+import { server } from '@/test/server'
 import { renderApp } from '@/test/utils'
 
 describe('Login flow', () => {
@@ -32,6 +35,20 @@ describe('Login flow', () => {
     expect(await screen.findByRole('heading', { name: 'Properties' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/properties')
     expect(localStorage.getItem('leaseflow.access')).toBe('access-token')
+  })
+
+  it('signs in with one click using the demo account', async () => {
+    const { user, router } = renderApp('/login', { signedIn: false })
+    await user.click(await screen.findByRole('button', { name: /demo account/i }))
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+  })
+
+  it('tells a server outage apart from bad credentials', async () => {
+    server.use(http.post(`${API}/auth/login`, () => HttpResponse.json({}, { status: 503 })))
+    const { user } = renderApp('/login', { signedIn: false })
+    await user.click(await screen.findByRole('button', { name: /demo account/i }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not reach the server')
   })
 
   it('signs out and clears the session', async () => {

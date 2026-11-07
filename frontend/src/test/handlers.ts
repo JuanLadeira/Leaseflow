@@ -3,6 +3,7 @@ import { API, demoUser, leadDetail, leads, makeVisit, pageOf, properties, tomorr
 
 /** Default happy-path API. Tests override single endpoints with server.use(...). */
 export const handlers = [
+  http.get(`${API}/health`, () => HttpResponse.json({ status: 'ok' })),
   http.post(`${API}/auth/login`, async ({ request }) => {
     const body = (await request.json()) as { username: string; password: string }
     if (body.username === 'demo' && body.password === 'leaseflow123') {
