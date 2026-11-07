@@ -24,6 +24,7 @@ It is a full-stack monorepo (React 19 + TypeScript on the frontend, Django + Dja
 - [Architecture](#architecture)
 - [Backend](#backend)
 - [Frontend](#frontend)
+- [Internationalization](#internationalization)
 - [AI reply assistant](#ai-reply-assistant)
 - [Testing](#testing)
 - [Containers and environments](#containers-and-environments)
@@ -237,6 +238,7 @@ Each feature exports its own `routes.tsx` with lazy-loaded pages, so every scree
 | Session (user, status) | `AuthContext` | Read by many components, changes rarely. |
 | Tokens | `tokenStorage` external store + `useSyncExternalStore` | Must be readable outside React (the RTK Query base query refreshes tokens). |
 | Theme | `ThemeContext` | Global, low-frequency. |
+| Language | i18next instance (+ `localStorage`) | Global; components re-render through `useTranslation`. |
 | Filters, search, page | URL (`useSearchParams`) | Shareable, survives reloads and back/forward. |
 | Form state | React Hook Form + Zod | Uncontrolled inputs, schema as the single source of truth. |
 | Local UI (draft text, suggestion stream) | `useState` / `useReducer` | Owned by one component. |
@@ -244,6 +246,21 @@ Each feature exports its own `routes.tsx` with lazy-loaded pages, so every scree
 | In-flight changes (new or canceled tour, lead status) | `useOptimistic` | Shown instantly, dropped automatically when the transition ends. |
 
 There is no hand-written Redux slice on purpose: once server data is in RTK Query and filters are in the URL, no shared client state is left. The store is ready for one (`combineSlices`) when it appears.
+
+---
+
+## Internationalization
+
+The UI ships in **English** (default) and **Brazilian Portuguese**; the language picker sits in the sidebar footer and on the login page. Try it on the live demo with `?lng=pt-BR`.
+
+- **react-i18next, one namespace per feature.** Each feature keeps its strings next to its code in `features/<name>/locales/<lang>.json`; shared UI uses the `common` namespace in `shared/locales/`. `app/i18n/resources.ts` is the only file that composes them, so `shared/` still never imports from `features/`.
+- **Typed keys.** English is the source of truth: its JSON shape types every `t()` call, so a missing or misspelled key fails `tsc -b`. Other languages must provide the same namespaces (checked by the compiler) and the same keys (checked by a test).
+- **Detection and persistence.** `?lng=` in the URL, then the saved choice in `localStorage`, then the browser language, falling back to English. `<html lang>` follows the active language for screen readers.
+- **Formatting with `Intl`.** Currency, numbers, percentages, dates, times, time ranges and "today / yesterday" all come from `Intl` formatters built for the active locale (cached per locale). Rent is always USD: the language changes how it is written (`$1,250` / `US$ 1.250`), not the currency.
+- **Plurals and interpolation** use i18next (`count_one` / `count_other`); Zod schemas carry translation keys as messages, resolved with `t()` when rendered.
+- **API messages.** Status codes are translated on the client; the API's English conflict details are shown only to English users.
+- **AI drafts** still follow the prospect's language. The client sends `Accept-Language`, which the prompt uses only when the conversation doesn't show a language.
+- **Adding a language:** add it to `shared/i18n/languages.ts`, add a `<lang>.json` per namespace and register them in `app/i18n/resources.ts`. The compiler and the key-parity test list what is missing.
 
 ---
 
@@ -387,6 +404,8 @@ Built on Saturday, 2026-11-07 (times in UTC), starting from an empty repository 
 | 21:16 | Split-screen login with one-click demo and cold-start notice |
 | 21:17 | Toasts and skeleton loading states |
 | 21:20 | Lead conversation by day, calmer property cards, smarter empty agenda week |
+| 21:23 | i18n setup: react-i18next, typed keys, language detection, locale-aware `Intl` formatting |
+| 21:26 to 21:32 | All screens translated to Brazilian Portuguese, language picker, AI language tie-breaker |
 | 21:30 | New screenshots, demo GIF and README for the new UI |
 
 `git log --reverse --format="%ad %s" --date=iso` shows the exact history.
