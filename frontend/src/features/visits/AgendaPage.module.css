@@ -125,6 +125,7 @@
   gap: 0.5rem;
 }
 .visit {
+  position: relative;
   display: grid;
   gap: 0.125rem;
   transition: box-shadow var(--duration) var(--ease);
@@ -145,6 +146,10 @@
 .lead {
   font-weight: 600;
   color: var(--text);
+  text-decoration: none;
+}
+.lead:hover {
+  text-decoration: underline;
 }
 .notes {
   font-style: italic;
@@ -153,9 +158,14 @@
 .visit:hover {
   box-shadow: var(--shadow);
 }
+/* Icon-only cancel in the corner; fades in on hover so the card stays calm. */
 .cancel {
-  justify-self: start;
+  background: var(--surface);
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
   min-height: 0;
+  opacity: 0;
   padding: 0.125rem 0.375rem;
   font-size: 0.75rem;
 }
@@ -261,4 +271,14 @@
   color: var(--text-muted);
   background: var(--surface-2);
   text-decoration: line-through;
+}
+
+.visit:hover .cancel,
+.cancel:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .cancel {
+    opacity: 1;
+  }
 }

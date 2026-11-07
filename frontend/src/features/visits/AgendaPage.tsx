@@ -13,6 +13,7 @@ import {
   formatDay,
   SLOT_MINUTES,
   formatTime,
+  formatTimeRange,
   fromDateKey,
   isDateKey,
   startOfWeek,
@@ -199,9 +200,7 @@ function VisitCard({ visit, onCancel }: { visit: Visit; onCancel: (visit: Visit)
   const pending = visit.id < 0
   return (
     <li className={styles.visit} data-pending={pending} aria-busy={pending}>
-      <span className={styles.time}>
-        {formatTime(visit.starts_at)} – {formatTime(visit.ends_at)}
-      </span>
+      <span className={styles.time}>{formatTimeRange(visit.starts_at, visit.ends_at)}</span>
       <Link to={`/leads/${visit.lead_id}`} className={styles.lead}>
         {visit.lead_name}
       </Link>
@@ -218,9 +217,9 @@ function VisitCard({ visit, onCancel }: { visit: Visit; onCancel: (visit: Visit)
           className={`btn btn-ghost ${styles.cancel}`}
           onClick={() => onCancel(visit)}
           aria-label={`Cancel tour with ${visit.lead_name} at ${formatTime(visit.starts_at)}`}
+          title="Cancel tour"
         >
           <X aria-hidden="true" />
-          Cancel
         </button>
       )}
     </li>

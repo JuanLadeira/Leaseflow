@@ -4,15 +4,15 @@ A leasing dashboard for property managers: properties and units, a leads inbox f
 
 It is a full-stack monorepo (React 19 + TypeScript on the frontend, Django + Django Ninja on the backend) built in one sitting as a portfolio project for a React role in the proptech space. The [timeline](#timeline) section shows how it was built, commit by commit.
 
-![Demo: a new lead, an AI-drafted reply streamed and sent, then a tour booked on the agenda](docs/demo.gif)
+![Demo: one-click demo sign-in, a lead from the dashboard queue, an AI-drafted reply streamed and sent, then a tour booked on the agenda](docs/demo.gif)
 
-*A new lead → AI-drafted reply streamed token by token → reply sent → tour booked from the lead page.*
+*One-click demo sign-in → a new lead from the dashboard's reply queue → AI-drafted reply streamed token by token → reply sent → tour booked from the lead page.*
 
-| Lead detail + AI assistant | Tour agenda | Dashboard |
+| Dashboard | Leads inbox + AI assistant | Tour agenda |
 | --- | --- | --- |
-| ![Lead detail](docs/screenshots/lead-detail.png) | ![Agenda](docs/screenshots/agenda.png) | ![Dashboard](docs/screenshots/dashboard.png) |
-| **Properties** | **Inbox on mobile, dark mode** | |
-| ![Properties](docs/screenshots/properties.png) | ![Mobile inbox](docs/screenshots/mobile-inbox-dark.png) | |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Lead detail](docs/screenshots/lead-detail.png) | ![Agenda](docs/screenshots/agenda.png) |
+| **Properties** | **Login** | **Inbox on mobile, dark mode** |
+| ![Properties](docs/screenshots/properties.png) | ![Login](docs/screenshots/login.png) | ![Mobile inbox](docs/screenshots/mobile-inbox-dark.png) |
 
 ---
 
@@ -89,13 +89,13 @@ Without `ANTHROPIC_API_KEY`, the assistant streams a deterministic template repl
 
 | Screen | What it does |
 | --- | --- |
-| **Login** | JWT sign-in with client-side validation; returns you to the page you originally asked for. |
-| **Dashboard** | Occupancy, vacant units, open leads, conversion rate and a leads-by-stage funnel that links into the filtered inbox. |
-| **Properties** | Responsive card grid with debounced search and pagination, both kept in the URL. |
+| **Login** | JWT sign-in with client-side validation and a one-click demo account; returns you to the page you originally asked for. It pings the API on load to wake the free-tier server and explains the wait if sign-in is slow. |
+| **Dashboard** | KPIs with context (occupancy, vacant units, open leads, conversion), a leads-by-stage funnel with each stage's share that links into the filtered inbox, and two work queues: new leads waiting for a reply and the tours of the next 7 days. |
+| **Properties** | Responsive card grid with debounced search and pagination, both kept in the URL; occupancy meters are coloured by threshold. |
 | **Property detail** | Units table and an "add unit" form; adding a unit refreshes counts on the detail, the list and the dashboard through cache invalidation. |
 | **Leads inbox** | Two-pane inbox (list + nested detail route) over 600 leads, virtualized, with status filters and search in the URL. One pane at a time on mobile. |
-| **Lead detail** | Conversation thread, optimistic pipeline status, a reply composer with the streaming AI assistant, and a "Schedule tour" shortcut. |
-| **Agenda** | Week of tours (week in the URL) and a booking form: pick a lead, a day, a duration and a free slot. Slots already taken for that unit or by you are disabled; the server still rejects overlaps with a 409. New and canceled tours update optimistically. |
+| **Lead detail** | Conversation thread grouped by day, optimistic pipeline status, a reply composer with the streaming AI assistant, and a "Schedule tour" shortcut. |
+| **Agenda** | Week of tours (week in the URL) and a booking form: pick a lead, a day, a duration and a free slot. Slots already taken for that unit or by you are disabled; the server still rejects overlaps with a 409. New and canceled tours update optimistically. An empty week points to the next booked tour. |
 
 ---
 
@@ -188,7 +188,7 @@ Short-lived access token (30 min) and longer refresh token (7 days), both JWT wi
 
 ## Frontend
 
-**Stack:** React 19, TypeScript, Vite 8 with the React Compiler, React Router, Redux Toolkit + RTK Query, React Hook Form + Zod, CSS Modules on design tokens, Vitest + Testing Library + MSW, oxlint.
+**Stack:** React 19, TypeScript, Vite 8 with the React Compiler, React Router, Redux Toolkit + RTK Query, React Hook Form + Zod, CSS Modules on design tokens, lucide-react icons, self-hosted Inter, Vitest + Testing Library + MSW, oxlint.
 
 ### Folders by feature
 
@@ -197,8 +197,8 @@ src/
 ├── app/                     composition only
 │   ├── store.ts             configureStore + makeStore() factory (isolated store per test)
 │   ├── router.tsx           composes each feature's routes under RequireAuth + Layout
-│   ├── providers.tsx        Redux, Theme and Auth providers (shared with tests)
-│   └── Layout.tsx
+│   ├── providers.tsx        Redux, Theme, Toast and Auth providers (shared with tests)
+│   └── Layout.tsx           sidebar shell (drawer on mobile)
 ├── features/
 │   ├── auth/                LoginPage, routes
 │   ├── properties/          propertiesApi, PropertiesPage, PropertyDetailPage, AddUnitForm, routes
@@ -209,7 +209,7 @@ src/
 └── shared/
     ├── api/                 baseApi (RTK Query + token refresh), config, types
     ├── auth/                tokenStorage, AuthContext, RequireAuth, authApi
-    ├── ui/                  Spinner, StateViews, StatusBadge, Pagination, VirtualList<T>
+    ├── ui/                  Logo, Skeleton, Toast, Spinner, StateViews, StatusBadge, Pagination, VirtualList<T>
     ├── hooks/               useDebounce
     ├── lib/                 SSE parser, formatters
     └── theme/               ThemeContext, tokens.css
@@ -221,6 +221,13 @@ src/
 - `shared/` never imports from `features/` or `app/`.
 
 Each feature exports its own `routes.tsx` with lazy-loaded pages, so every screen is its own chunk and `app/router.tsx` only composes them.
+
+### UI and design system
+
+- **Shell:** the common SaaS layout, a fixed sidebar with icon navigation and a profile footer; below 960px it becomes a drawer behind a top bar (closes on navigation, Escape or the backdrop).
+- **Tokens:** colours, type scale, radii, shadows and motion live in `shared/theme/tokens.css`; dark mode only swaps tokens. Each pipeline stage has one `--stage-*` colour, so badges, filters and the dashboard funnel always agree.
+- **Feedback:** skeletons shaped like the content while loading, empty states that suggest the next step, and toasts in a polite live region for confirmations (reply sent, status moved, tour booked).
+- **Accessibility:** skip link, visible focus rings, `aria-pressed` filters, `aria-busy` loading regions, icons hidden from screen readers next to text labels, and `prefers-reduced-motion` turning transitions off.
 
 ### State: where each kind of state lives
 
@@ -258,7 +265,7 @@ The system prompt keeps the model honest: no invented fees, amenities or discoun
 | Suite | Tools | Count | What it covers |
 | --- | --- | --- | --- |
 | Backend | pytest, pytest-django, pytest-asyncio | 41 | Auth contract, async endpoints, validation errors, SSE frames, service rules without HTTP. Runs on SQLite locally and Postgres in CI/Docker. |
-| Frontend | Vitest, Testing Library, user-event, MSW | 32 | User flows through the real router and store, plus unit tests for hooks, the SSE parser and the reducer. |
+| Frontend | Vitest, Testing Library, user-event, MSW | 39 | User flows through the real router and store, plus unit tests for hooks, the SSE parser and the reducer. |
 
 Frontend flow tests render the real route tree with `renderApp(path)` and an isolated store; MSW mocks the network at the `fetch` level, including a streamed SSE response. Queries are by role and label, the same way a user or screen reader finds things.
 
@@ -374,6 +381,13 @@ Built on Saturday, 2026-11-07 (times in UTC), starting from an empty repository 
 | 20:14 | Agenda + booking form: `useReducer`, form action + `useActionState`, `useOptimistic`, 11 frontend tests |
 | 20:15 | Render blueprint (API + Postgres + static site) |
 | 20:20 | Demo GIF and README |
+| 21:12 | UI pass: self-hosted Inter, lucide icons, per-stage colour tokens |
+| 21:14 | Sidebar shell with mobile drawer |
+| 21:15 | Actionable dashboard: KPI context, funnel shares, reply and tour queues |
+| 21:16 | Split-screen login with one-click demo and cold-start notice |
+| 21:17 | Toasts and skeleton loading states |
+| 21:20 | Lead conversation by day, calmer property cards, smarter empty agenda week |
+| 21:30 | New screenshots, demo GIF and README for the new UI |
 
 `git log --reverse --format="%ad %s" --date=iso` shows the exact history.
 
