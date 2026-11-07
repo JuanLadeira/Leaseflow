@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "properties",
     "leads",
     "dashboard",
+    "visits",
 ]
 
 MIDDLEWARE = [
