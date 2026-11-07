@@ -1,0 +1,54 @@
+{
+  "inbox": {
+    "title": "Leads",
+    "search": "Search leads",
+    "searchPlaceholder": "Search name or email",
+    "filter": "Filter by status",
+    "all": "All",
+    "loading": "Loading leads",
+    "error": "Could not load leads.",
+    "empty": "No leads match these filters",
+    "list": "Leads",
+    "detail": "Lead detail",
+    "noneSelected": "Select a lead",
+    "noneSelectedBody": "Pick a conversation from the inbox."
+  },
+  "detail": {
+    "loading": "Loading lead",
+    "notFound": "Lead not found.",
+    "back": "Inbox",
+    "via": "via {{source}}",
+    "schedule": "Schedule tour",
+    "interested": "Interested in",
+    "perMonth": "{{amount}}/mo",
+    "budget": "Budget",
+    "moveIn": "Move-in",
+    "conversation": "Conversation",
+    "you": "You",
+    "aiAssisted": "AI-assisted"
+  },
+  "status": {
+    "label": "Pipeline status",
+    "moved": "Moved to {{status}}",
+    "error": "Could not update the status. Reverted."
+  },
+  "composer": {
+    "assistant": "AI reply assistant",
+    "stop": "Stop",
+    "suggest": "Suggest reply",
+    "regenerate": "Regenerate",
+    "draftedBy": "Drafted by {{model}}. Review before sending.",
+    "useDraft": "Use this draft",
+    "reply": "Reply",
+    "placeholder": "Write a reply…",
+    "empty": "Write a message first.",
+    "sent": "Sent",
+    "sentToast": "Reply sent",
+    "sendError": "Message not sent. Try again.",
+    "send": "Send reply",
+    "sending": "Sending…",
+    "stopped": "Stopped",
+    "failed": "Could not draft a reply ({{status}}).",
+    "unknown": "Something went wrong."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "inbox": {
+    "title": "Leads",
+    "search": "Buscar leads",
+    "searchPlaceholder": "Buscar por nome ou e-mail",
+    "filter": "Filtrar por status",
+    "all": "Todos",
+    "loading": "Carregando leads",
+    "error": "Não foi possível carregar os leads.",
+    "empty": "Nenhum lead com esses filtros",
+    "list": "Leads",
+    "detail": "Detalhes do lead",
+    "noneSelected": "Selecione um lead",
+    "noneSelectedBody": "Escolha uma conversa na caixa de entrada."
+  },
+  "detail": {
+    "loading": "Carregando lead",
+    "notFound": "Lead não encontrado.",
+    "back": "Caixa de entrada",
+    "via": "via {{source}}",
+    "schedule": "Agendar visita",
+    "interested": "Interesse em",
+    "perMonth": "{{amount}}/mês",
+    "budget": "Orçamento",
+    "moveIn": "Mudança",
+    "conversation": "Conversa",
+    "you": "Você",
+    "aiAssisted": "Com ajuda da IA"
+  },
+  "status": {
+    "label": "Etapa do funil",
+    "moved": "Movido para {{status}}",
+    "error": "Não foi possível atualizar o status. Revertido."
+  },
+  "composer": {
+    "assistant": "Assistente de resposta com IA",
+    "stop": "Parar",
+    "suggest": "Sugerir resposta",
+    "regenerate": "Gerar de novo",
+    "draftedBy": "Rascunho de {{model}}. Revise antes de enviar.",
+    "useDraft": "Usar este rascunho",
+    "reply": "Resposta",
+    "placeholder": "Escreva uma resposta…",
+    "empty": "Escreva uma mensagem primeiro.",
+    "sent": "Enviada",
+    "sentToast": "Resposta enviada",
+    "sendError": "Mensagem não enviada. Tente novamente.",
+    "send": "Enviar resposta",
+    "sending": "Enviando…",
+    "stopped": "Interrompido",
+    "failed": "Não foi possível gerar a resposta ({{status}}).",
+    "unknown": "Algo deu errado."
+  }
+}

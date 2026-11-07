@@ -9,6 +9,8 @@ import dashboardEn from '@/features/dashboard/locales/en.json'
 import dashboardPt from '@/features/dashboard/locales/pt-BR.json'
 import propertiesEn from '@/features/properties/locales/en.json'
 import propertiesPt from '@/features/properties/locales/pt-BR.json'
+import leadsEn from '@/features/leads/locales/en.json'
+import leadsPt from '@/features/leads/locales/pt-BR.json'
 import commonEn from '@/shared/locales/en.json'
 import commonPt from '@/shared/locales/pt-BR.json'
 import type { Language } from '@/shared/i18n/languages'
@@ -19,6 +21,7 @@ export const en = {
   auth: authEn,
   dashboard: dashboardEn,
   properties: propertiesEn,
+  leads: leadsEn,
 }
 
 export type Resources = typeof en
@@ -31,5 +34,6 @@ export const resources: Record<Language, Record<keyof Resources, object>> = {
     auth: authPt,
     dashboard: dashboardPt,
     properties: propertiesPt,
+    leads: leadsPt,
   },
 }

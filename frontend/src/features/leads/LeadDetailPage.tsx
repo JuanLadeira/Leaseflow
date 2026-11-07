@@ -1,10 +1,18 @@
 import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, CalendarPlus, Mail, Megaphone, Phone, Sparkles } from 'lucide-react'
 import type { Message } from '@/shared/api/types'
 import { Loading, Skeleton, SkeletonBlock } from '@/shared/ui/Skeleton'
 import { ErrorState } from '@/shared/ui/StateViews'
-import { formatCurrency, formatDayHeading, formatTime, LEAD_SOURCE_LABEL } from '@/shared/lib/format'
+import {
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatDayHeading,
+  formatTime,
+  leadSourceLabel,
+} from '@/shared/lib/format'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { useGetLeadQuery } from './leadsApi'
 import styles from './LeadDetailPage.module.css'
@@ -23,15 +31,14 @@ function byDay(messages: Message[]) {
   return groups
 }
 
-const moveIn = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-
 export default function LeadDetailPage() {
+  const { t } = useTranslation('leads')
   const leadId = Number(useParams().leadId)
   const { data: lead, isLoading, isError, refetch } = useGetLeadQuery(leadId)
 
   if (isLoading)
     return (
-      <Loading label="Loading lead">
+      <Loading label={t('detail.loading')}>
         <div className={`card ${styles.loading}`}>
           <Skeleton lines={2} />
           <SkeletonBlock height="16rem" />
@@ -39,13 +46,13 @@ export default function LeadDetailPage() {
         </div>
       </Loading>
     )
-  if (isError || !lead) return <ErrorState message="Lead not found." onRetry={refetch} />
+  if (isError || !lead) return <ErrorState message={t('detail.notFound')} onRetry={refetch} />
 
   return (
     <article className={`card ${styles.detail}`} aria-labelledby="lead-title">
       <header className={styles.header}>
         <Link to="/leads" className={styles.back}>
-          <ArrowLeft aria-hidden="true" className="icon" /> Inbox
+          <ArrowLeft aria-hidden="true" className="icon" /> {t('detail.back')}
         </Link>
         <div className={styles.headerMain}>
           <div className={styles.identity}>
@@ -72,7 +79,7 @@ export default function LeadDetailPage() {
                 )}
                 <li>
                   <Megaphone aria-hidden="true" className="icon" />
-                  via {LEAD_SOURCE_LABEL[lead.source]}
+                  {t('detail.via', { source: leadSourceLabel(lead.source) })}
                 </li>
               </ul>
             </div>
@@ -81,32 +88,32 @@ export default function LeadDetailPage() {
             <LeadStatusSelect key={lead.id} leadId={lead.id} status={lead.status} />
             <Link to={`/visits?schedule=1&lead=${lead.id}`} className="btn">
               <CalendarPlus aria-hidden="true" />
-              Schedule tour
+              {t('detail.schedule')}
             </Link>
           </div>
         </div>
         <dl className={styles.facts}>
           {lead.unit && (
             <div>
-              <dt>Interested in</dt>
+              <dt>{t('detail.interested')}</dt>
               <dd>
                 <Link to={`/properties/${lead.unit.property_id}`}>{lead.unit.property_name}</Link>{' '}
-                · {lead.unit.label} · {formatCurrency(lead.unit.rent)}/mo
+                · {lead.unit.label} · {t('detail.perMonth', { amount: formatCurrency(lead.unit.rent) })}
               </dd>
             </div>
           )}
           {lead.budget && (
             <div>
-              <dt>Budget</dt>
-              <dd>{formatCurrency(lead.budget)}/mo</dd>
+              <dt>{t('detail.budget')}</dt>
+              <dd>{t('detail.perMonth', { amount: formatCurrency(lead.budget) })}</dd>
             </div>
           )}
           {lead.desired_move_in && (
             <div>
-              <dt>Move-in</dt>
+              <dt>{t('detail.moveIn')}</dt>
               <dd>
                 <time dateTime={lead.desired_move_in}>
-                  {moveIn.format(new Date(`${lead.desired_move_in}T00:00`))}
+                  {formatDate(lead.desired_move_in)}
                 </time>
               </dd>
             </div>
@@ -114,7 +121,7 @@ export default function LeadDetailPage() {
         </dl>
       </header>
 
-      <ol className={styles.thread} aria-label="Conversation" role="log">
+      <ol className={styles.thread} aria-label={t('detail.conversation')} role="log">
         {byDay(lead.messages).map((group) => (
           <Fragment key={group.day}>
             <li className={styles.daySeparator} aria-hidden="true">
@@ -127,13 +134,13 @@ export default function LeadDetailPage() {
               >
                 <p className={styles.bubble}>{message.body}</p>
                 <span className={styles.bubbleMeta}>
-                  {message.direction === 'inbound' ? lead.full_name.split(' ')[0] : 'You'}
+                  {message.direction === 'inbound' ? lead.full_name.split(' ')[0] : t('detail.you')}
                   {message.ai_generated && (
                     <span className={styles.aiTag}>
-                      <Sparkles aria-hidden="true" /> AI-assisted
+                      <Sparkles aria-hidden="true" /> {t('detail.aiAssisted')}
                     </span>
                   )}
-                  <time dateTime={message.created_at} title={new Date(message.created_at).toLocaleString()}>
+                  <time dateTime={message.created_at} title={formatDateTime(message.created_at)}>
                     {formatTime(message.created_at)}
                   </time>
                 </span>

@@ -1,6 +1,8 @@
 import { useEffect, useReducer, useRef } from 'react'
 import { API_URL } from '@/shared/api/config'
 import { tokenStorage } from '@/shared/auth/tokenStorage'
+import { i18n } from '@/shared/i18n'
+import { currentLocale } from '@/shared/i18n/locale'
 import { createSseParser } from '@/shared/lib/sse'
 
 /** Discriminated union: each status carries exactly the data that makes sense for it. */
@@ -61,10 +63,14 @@ export function useReplySuggestion(leadId: number) {
     try {
       const response = await fetch(`${API_URL}/leads/${leadId}/reply-suggestion`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${tokenStorage.getAccess() ?? ''}` },
+        headers: {
+          Authorization: `Bearer ${tokenStorage.getAccess() ?? ''}`,
+          // The draft goes to the lead, so it follows the lead's language; this is only a fallback.
+          'Accept-Language': currentLocale(),
+        },
         signal: controller.signal,
       })
-      if (!response.ok || !response.body) throw new Error(`Request failed (${response.status})`)
+      if (!response.ok || !response.body) throw new Error(i18n.t('leads:composer.failed', { status: response.status }))
 
       const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
       const parse = createSseParser()
@@ -80,10 +86,10 @@ export function useReplySuggestion(leadId: number) {
       }
     } catch (err) {
       if (controller.signal.aborted) {
-        dispatch({ type: 'error', error: 'Stopped' })
+        dispatch({ type: 'error', error: i18n.t('leads:composer.stopped') })
         return
       }
-      dispatch({ type: 'error', error: err instanceof Error ? err.message : 'Unknown error' })
+      dispatch({ type: 'error', error: err instanceof Error ? err.message : i18n.t('leads:composer.unknown') })
     } finally {
       if (controllerRef.current === controller) controllerRef.current = null
     }
