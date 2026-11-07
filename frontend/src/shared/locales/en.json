@@ -21,5 +21,36 @@
     "apartments_com": "Apartments.com",
     "referral": "Referral",
     "walk_in": "Walk-in"
-  }
+  },
+  "nav": {
+    "skip": "Skip to content",
+    "open": "Open navigation",
+    "close": "Close navigation",
+    "main": "Main",
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "leads": "Leads",
+    "agenda": "Agenda"
+  },
+  "theme": {
+    "toDark": "Switch to dark theme",
+    "toLight": "Switch to light theme"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "restoring": "Restoring your session"
+  },
+  "actions": {
+    "tryAgain": "Try again",
+    "dismiss": "Dismiss notification",
+    "previous": "Previous",
+    "next": "Next",
+    "cancel": "Cancel"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "page": "Page {{page}} of {{pages}}"
+  },
+  "loading": "Loading"
 }

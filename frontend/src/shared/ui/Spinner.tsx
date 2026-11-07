@@ -1,10 +1,12 @@
 import styles from './Spinner.module.css'
+import { useTranslation } from 'react-i18next'
 
-export function Spinner({ label = 'Loading' }: { label?: string }) {
+export function Spinner({ label }: { label?: string }) {
+  const { t } = useTranslation()
   return (
     <output className={styles.wrapper}>
       <span className={styles.spinner} aria-hidden="true" />
-      <span className="visually-hidden">{label}</span>
+      <span className="visually-hidden">{label ?? t('loading')}</span>
     </output>
   )
 }

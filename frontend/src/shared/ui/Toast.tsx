@@ -3,6 +3,7 @@ import { CircleCheck, CircleAlert, X } from 'lucide-react'
 import styles from './Toast.module.css'
 
 import { ToastContext, type Notify, type Tone } from './toastContext'
+import { useTranslation } from 'react-i18next'
 
 interface Toast {
   id: number
@@ -17,6 +18,7 @@ let nextId = 1
  * live region, so screen readers announce each toast without moving focus.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const dismiss = (id: number) => setToasts((all) => all.filter((toast) => toast.id !== id))
@@ -39,7 +41,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 className={styles.close}
-                aria-label="Dismiss notification"
+                aria-label={t('actions.dismiss')}
                 onClick={() => dismiss(toast.id)}
               >
                 <X aria-hidden="true" />
