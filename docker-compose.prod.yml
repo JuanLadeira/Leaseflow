@@ -1,0 +1,53 @@
+# Production-like stack: immutable images, nginx serving the SPA and proxying /api.
+#   cp .env.example .env   # set real secrets
+#   docker compose -f docker-compose.prod.yml up --build -d
+# App: http://localhost:8080
+name: leaseflow-prod
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: leaseflow
+      POSTGRES_USER: leaseflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-leaseflow}
+    volumes: [pgdata-prod:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaseflow -d leaseflow"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: compose/backend/Dockerfile
+      target: prod
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://leaseflow:${POSTGRES_PASSWORD:-leaseflow}@db:5432/leaseflow
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      SEED_DEMO: ${SEED_DEMO:-true}
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: compose/frontend/Dockerfile
+      target: prod
+    ports: ["8080:80"]
+    depends_on:
+      backend: { condition: service_healthy }
+    restart: unless-stopped
+
+volumes:
+  pgdata-prod:

@@ -1,0 +1,51 @@
+# Local development: hot reload for Django and Vite, Postgres in a container.
+#   docker compose up --build
+# App: http://localhost:5173  API docs: http://localhost:8000/api/docs
+name: leaseflow-dev
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: leaseflow
+      POSTGRES_USER: leaseflow
+      POSTGRES_PASSWORD: leaseflow
+    ports: ["5432:5432"]
+    volumes: [pgdata-dev:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaseflow -d leaseflow"]
+      interval: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: compose/backend/Dockerfile
+      target: dev
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://leaseflow:leaseflow@db:5432/leaseflow
+      DJANGO_DEBUG: "true"
+      SEED_DEMO: "true"
+    volumes: [./backend:/app]
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: .
+      dockerfile: compose/frontend/Dockerfile
+      target: dev
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # keep the image's node_modules, not the host's
+    ports: ["5173:5173"]
+    depends_on: [backend]
+
+volumes:
+  pgdata-dev:

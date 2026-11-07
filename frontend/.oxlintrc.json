@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "import", "jsx-a11y", "vitest"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "import/no-cycle": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*/*"],
+                "message": "Import another feature only through its public index (e.g. '@/features/assistant')."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/**", "@/app/*", "@/app/**"],
+                "message": "shared/ must not depend on features/ or app/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/**/routes.tsx", "src/shared/**/*Context.tsx", "src/test/**"],
+      "rules": { "react/only-export-components": "off" }
+    }
+  ]
+}

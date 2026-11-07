@@ -1,0 +1,40 @@
+# Runs both test suites in containers, against a throwaway Postgres.
+#   docker compose -f docker-compose.test.yml run --rm backend-tests
+#   docker compose -f docker-compose.test.yml run --rm frontend-tests
+name: leaseflow-test
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: leaseflow
+      POSTGRES_USER: leaseflow
+      POSTGRES_PASSWORD: leaseflow
+    tmpfs: [/var/lib/postgresql/data] # in-memory: fast and always clean
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leaseflow -d leaseflow"]
+      interval: 2s
+      retries: 30
+
+  backend-tests:
+    build:
+      context: .
+      dockerfile: compose/backend/Dockerfile
+      target: dev
+    entrypoint: []
+    command: sh -c "ruff check . && ruff format --check . && pytest -q"
+    environment:
+      DATABASE_URL: postgres://leaseflow:leaseflow@db:5432/leaseflow
+    volumes: [./backend:/app]
+    depends_on:
+      db: { condition: service_healthy }
+
+  frontend-tests:
+    build:
+      context: .
+      dockerfile: compose/frontend/Dockerfile
+      target: dev
+    command: sh -c "pnpm lint && pnpm typecheck && pnpm test"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

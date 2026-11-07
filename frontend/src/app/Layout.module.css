@@ -1,0 +1,80 @@
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+.logo {
+  color: var(--accent);
+}
+.nav {
+  display: flex;
+  gap: 0.25rem;
+  order: 3;
+  width: 100%;
+  overflow-x: auto;
+}
+.link {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+.link:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.active {
+  color: var(--accent-strong);
+  background: var(--accent-bg);
+}
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.user {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 0 0.5rem;
+}
+.main {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+/* Mobile-first: nav moves inline with the brand from tablet width up. */
+@media (min-width: 768px) {
+  .header {
+    padding: 0.75rem 1.5rem;
+  }
+  .nav {
+    order: 0;
+    width: auto;
+  }
+  .main {
+    padding: 1.5rem 1.5rem 3rem;
+  }
+}
