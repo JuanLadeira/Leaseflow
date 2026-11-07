@@ -1,4 +1,5 @@
 import { useActionState, useState } from 'react'
+import { Send, Sparkles } from 'lucide-react'
 import { useSendMessageMutation } from './leadsApi'
 import styles from './LeadDetailPage.module.css'
 import { useReplySuggestion } from '@/features/assistant'
@@ -46,7 +47,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
       <div className={styles.assistant} aria-labelledby="assistant-title">
         <div className={styles.assistantHeader}>
           <h3 id="assistant-title" className={styles.assistantTitle}>
-            ✦ AI reply assistant
+            <Sparkles aria-hidden="true" className="icon" /> AI reply assistant
           </h3>
           {isStreaming ? (
             <button type="button" className="btn" onClick={suggestion.stop}>
@@ -116,6 +117,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
             <output className={styles.sent}>Sent</output>
           )}
           <button type="submit" className="btn btn-primary" disabled={isSending}>
+            <Send aria-hidden="true" />
             {isSending ? 'Sending…' : 'Send reply'}
           </button>
         </div>

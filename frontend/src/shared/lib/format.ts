@@ -17,6 +17,20 @@ export function formatRelative(iso: string, now = Date.now()): string {
   return relative.format(Math.round(hours / 24), 'day')
 }
 
+const shortTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' })
+export const formatTime = (iso: string) => shortTime.format(new Date(iso))
+
+const dayHeading = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+/** "Today", "Yesterday" or "Monday, Nov 2" for a conversation day separator. */
+export function formatDayHeading(iso: string, now = new Date()): string {
+  const date = new Date(iso)
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  if (date.toDateString() === now.toDateString()) return 'Today'
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return dayHeading.format(date)
+}
+
 export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   new: 'New',
   contacted: 'Contacted',
