@@ -1,0 +1,22 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.md {
+  font-size: var(--text-lg);
+}
+.lg {
+  font-size: var(--text-xl);
+}
+.mark {
+  width: 1.75em;
+  height: 1.75em;
+  flex: none;
+}
+.tile {
+  fill: var(--accent);
+}

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useToast } from '@/shared/ui/toastContext'
 import { useCreateUnitMutation } from './propertiesApi'
 import styles from './PropertyDetailPage.module.css'
 
@@ -18,6 +19,7 @@ type UnitFormValues = z.output<typeof unitSchema>
 
 export function AddUnitForm({ propertyId }: { propertyId: number }) {
   const [createUnit, { isLoading, error }] = useCreateUnitMutation()
+  const notify = useToast()
   const {
     register,
     handleSubmit,
@@ -37,6 +39,7 @@ export function AddUnitForm({ propertyId }: { propertyId: number }) {
 
   const onSubmit = handleSubmit(async (values) => {
     await createUnit({ propertyId, unit: values }).unwrap()
+    notify(`Unit ${values.label} added`)
     reset()
   })
 

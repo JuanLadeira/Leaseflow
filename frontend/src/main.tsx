@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router'
 import { AppProviders } from '@/app/providers'
 import { createAppRouter } from '@/app/router'
 import { makeStore } from '@/app/store'
+import '@fontsource-variable/inter'
 import '@/shared/theme/tokens.css'
 
 const store = makeStore()

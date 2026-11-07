@@ -61,6 +61,7 @@ describe('Lead detail', () => {
     await user.click(await screen.findByRole('button', { name: 'Use this draft' }))
     await user.click(screen.getByRole('button', { name: 'Send reply' }))
     expect(await screen.findByText('Sent')).toBeInTheDocument()
+    expect(screen.getByText('Reply sent')).toBeInTheDocument() // toast
     expect(sent).toEqual({ body: 'Hi Ava, unit 1B is available!', ai_generated: true })
     expect(screen.getByLabelText('Reply')).toHaveValue('')
   })

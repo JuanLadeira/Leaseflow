@@ -1,7 +1,9 @@
 import { useActionState, useState } from 'react'
+import { Send, Sparkles } from 'lucide-react'
 import { useSendMessageMutation } from './leadsApi'
 import styles from './LeadDetailPage.module.css'
 import { useReplySuggestion } from '@/features/assistant'
+import { useToast } from '@/shared/ui/toastContext'
 
 type SendState = { status: 'idle' } | { status: 'sent' } | { status: 'error'; message: string }
 
@@ -16,6 +18,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
   const [fromAi, setFromAi] = useState(false)
   const [sendMessage] = useSendMessageMutation()
   const suggestion = useReplySuggestion(leadId)
+  const notify = useToast()
   const { state } = suggestion
 
   const [sendState, formAction, isSending] = useActionState<SendState, FormData>(
@@ -27,6 +30,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
         setDraft('')
         setFromAi(false)
         suggestion.reset()
+        notify('Reply sent')
         return { status: 'sent' }
       } catch {
         return { status: 'error', message: 'Message not sent. Try again.' }
@@ -43,7 +47,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
       <div className={styles.assistant} aria-labelledby="assistant-title">
         <div className={styles.assistantHeader}>
           <h3 id="assistant-title" className={styles.assistantTitle}>
-            ✦ AI reply assistant
+            <Sparkles aria-hidden="true" className="icon" /> AI reply assistant
           </h3>
           {isStreaming ? (
             <button type="button" className="btn" onClick={suggestion.stop}>
@@ -113,6 +117,7 @@ export function ReplyComposer({ leadId }: { leadId: number }) {
             <output className={styles.sent}>Sent</output>
           )}
           <button type="submit" className="btn btn-primary" disabled={isSending}>
+            <Send aria-hidden="true" />
             {isSending ? 'Sending…' : 'Send reply'}
           </button>
         </div>

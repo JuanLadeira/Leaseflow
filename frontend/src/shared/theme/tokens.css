@@ -11,6 +11,7 @@
   --accent: #2f6fed;
   --accent-strong: #1f4fb8;
   --accent-bg: #e6eefd;
+  --on-accent: #ffffff;
   --info: #1d6fa5;
   --info-bg: #e3f1fa;
   --warn: #8a5a00;
@@ -21,11 +22,32 @@
   --danger-bg: #fde8e6;
   --chip-bg: #eef1f4;
   --chip-text: #3b4652;
+  /* One colour per pipeline stage, shared by badges, filters and the funnel. */
+  --stage-new: #2f6fed;
+  --stage-contacted: #0e9384;
+  --stage-tour: #7a5af8;
+  --stage-applied: #dc6803;
+  --stage-won: #1d7a46;
+  --stage-lost: #b42318;
+  --sidebar-bg: #ffffff;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+  --shadow-lg: 0 12px 24px -6px rgb(16 24 40 / 14%), 0 4px 8px -4px rgb(16 24 40 / 8%);
   --focus: 0 0 0 3px rgb(47 111 237 / 40%);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.875rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.75rem;
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --duration: 150ms;
+  font-family: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
@@ -43,6 +65,7 @@
   --accent: #6a9bff;
   --accent-strong: #9bbcff;
   --accent-bg: #1c2b47;
+  --on-accent: #0b1424;
   --info: #7cc3f0;
   --info-bg: #15293a;
   --warn: #f2c063;
@@ -53,7 +76,21 @@
   --danger-bg: #3a1a17;
   --chip-bg: #212b36;
   --chip-text: #c3ccd5;
+  --stage-new: #6a9bff;
+  --stage-contacted: #2ed3b7;
+  --stage-tour: #a48afb;
+  --stage-applied: #fdb022;
+  --stage-won: #6fd49a;
+  --stage-lost: #ff8a80;
+  --sidebar-bg: #121920;
   --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-lg: 0 12px 24px -6px rgb(0 0 0 / 50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration: 0ms;
+  }
 }
 
 *,
@@ -100,7 +137,7 @@ a {
   top: -3rem;
   padding: 0.5rem 0.75rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: var(--radius-sm);
   z-index: 100;
 }
@@ -124,6 +161,14 @@ a {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+  transition:
+    background-color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .btn:hover:not(:disabled) {
   background: var(--hover);
@@ -135,7 +180,7 @@ a {
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-strong);
@@ -164,6 +209,17 @@ a {
   background: var(--surface);
   color: var(--text);
   font: inherit;
+  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--text-muted);
+}
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+  border-color: var(--accent);
 }
 .textarea {
   resize: vertical;
@@ -194,7 +250,29 @@ a {
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
+.page-header h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
+}
 .page-header p {
   margin: 0.25rem 0 0;
   color: var(--text-muted);
+}
+
+.btn svg,
+.icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Fade + rise for page content; disabled by --duration under reduced motion. */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.enter {
+  animation: enter calc(var(--duration) * 2) var(--ease) both;
 }

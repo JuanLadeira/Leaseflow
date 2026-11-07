@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { Building2, MapPin, Search } from 'lucide-react'
 import { Pagination } from '@/shared/ui/Pagination'
-import { Spinner } from '@/shared/ui/Spinner'
+import { Loading, Skeleton, SkeletonBlock } from '@/shared/ui/Skeleton'
 import { EmptyState, ErrorState } from '@/shared/ui/StateViews'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { formatPercent } from '@/shared/lib/format'
@@ -38,6 +39,7 @@ export default function PropertiesPage() {
           <p>{data ? `${data.count} properties in your portfolio` : 'Your portfolio'}</p>
         </div>
         <div className={`field ${styles.search}`}>
+          <Search aria-hidden="true" className={styles.searchIcon} />
           <label htmlFor="property-search" className="visually-hidden">
             Search properties
           </label>
@@ -57,7 +59,18 @@ export default function PropertiesPage() {
       </div>
 
       {isLoading ? (
-        <Spinner label="Loading properties" />
+        <Loading label="Loading properties">
+          <div className={styles.grid} aria-hidden="true">
+            {Array.from({ length: PAGE_SIZE }, (_, i) => (
+              <div key={i} className={`card ${styles.card}`}>
+                <SkeletonBlock height="4.5rem" />
+                <div className={styles.body}>
+                  <Skeleton lines={3} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Loading>
       ) : isError ? (
         <ErrorState message="Could not load properties." onRetry={refetch} />
       ) : !data || data.items.length === 0 ? (
@@ -70,19 +83,13 @@ export default function PropertiesPage() {
                 {property.image_url ? (
                   <img src={property.image_url} alt="" loading="lazy" className={styles.image} />
                 ) : (
-                  // No photo: a deterministic gradient keeps cards distinct without external assets.
+                  // No photo: a soft deterministic tint keeps cards distinct without external assets.
                   <div
-                    className={styles.image}
+                    className={`${styles.image} ${styles.placeholder}`}
                     aria-hidden="true"
                     style={{ '--hue': (property.id * 47) % 360 } as CSSProperties}
                   >
-                    <span className={styles.initials}>
-                      {property.name
-                        .split(' ')
-                        .slice(0, 2)
-                        .map((word) => word[0])
-                        .join('')}
-                    </span>
+                    <Building2 className={styles.placeholderIcon} />
                   </div>
                 )}
                 <div className={styles.body}>
@@ -90,6 +97,7 @@ export default function PropertiesPage() {
                     <Link to={`/properties/${property.id}`}>{property.name}</Link>
                   </h2>
                   <p className={styles.address}>
+                    <MapPin aria-hidden="true" className="icon" />
                     {property.address}, {property.city}, {property.state}
                   </p>
                   <dl className={styles.stats}>
@@ -110,6 +118,9 @@ export default function PropertiesPage() {
                     className={styles.meter}
                     min={0}
                     max={1}
+                    low={0.75}
+                    high={0.9}
+                    optimum={1}
                     value={property.occupancy_rate}
                     aria-label={`Occupancy ${formatPercent(property.occupancy_rate)}`}
                   />

@@ -1,6 +1,7 @@
 import { useOptimistic, useState, useTransition } from 'react'
 import { LEAD_STATUSES, type LeadStatus } from '@/shared/api/types'
 import { LEAD_STATUS_LABEL } from '@/shared/lib/format'
+import { useToast } from '@/shared/ui/toastContext'
 import { useUpdateLeadStatusMutation } from './leadsApi'
 
 /**
@@ -13,6 +14,7 @@ export function LeadStatusSelect({ leadId, status }: { leadId: number; status: L
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [updateStatus] = useUpdateLeadStatusMutation()
+  const notify = useToast()
 
   function onChange(next: LeadStatus) {
     setError(null)
@@ -20,6 +22,7 @@ export function LeadStatusSelect({ leadId, status }: { leadId: number; status: L
       setOptimisticStatus(next)
       try {
         await updateStatus({ id: leadId, status: next }).unwrap()
+        notify(`Moved to ${LEAD_STATUS_LABEL[next]}`)
       } catch {
         setError('Could not update the status. Reverted.')
       }
