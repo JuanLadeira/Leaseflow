@@ -20,3 +20,7 @@ class NotFoundError(DomainError):
 
 class AuthenticationError(DomainError):
     status_code = 401
+
+
+class ConflictError(DomainError):
+    status_code = 409

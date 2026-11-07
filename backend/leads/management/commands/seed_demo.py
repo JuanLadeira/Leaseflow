@@ -5,7 +5,7 @@ Usage: python manage.py seed_demo [--leads 600] [--reset]
 """
 
 import random
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -15,6 +15,7 @@ from django.utils import timezone
 
 from leads.models import Lead, Message
 from properties.models import Property, Unit
+from visits.models import Visit
 
 DEMO_USERNAME = "demo"
 DEMO_PASSWORD = "leaseflow123"
@@ -80,7 +81,7 @@ class Command(BaseCommand):
 
         if reset:
             Property.objects.all().delete()
-            Lead.objects.all().delete()
+            Lead.objects.all().delete()  # cascades to messages and visits
         elif Property.objects.exists():
             self.stdout.write("Demo data already present (use --reset to recreate).")
             return
@@ -160,9 +161,46 @@ class Command(BaseCommand):
             lead.last_activity_at = now - timedelta(minutes=rng.randint(0, 60 * 24 * 30))
         Lead.objects.bulk_update(lead_objs, ["last_activity_at"])
 
+        visits = self._seed_visits(rng, user, lead_objs)
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {len(PROPERTIES)} properties, {len(units)} units, {len(lead_objs)} leads, "
-                f"{len(messages)} messages. Login: {DEMO_USERNAME} / {DEMO_PASSWORD}"
+                f"{len(messages)} messages, {len(visits)} visits. "
+                f"Login: {DEMO_USERNAME} / {DEMO_PASSWORD}"
             )
         )
+
+    def _seed_visits(self, rng: random.Random, agent, leads: list[Lead]) -> list[Visit]:
+        """Tours for leads at the `tour_scheduled` stage over the next two weeks (from tomorrow), on
+        30-minute business-hour slots, never double-booking a unit or the demo agent."""
+        today = timezone.localdate()
+        tz = timezone.get_current_timezone()
+        taken: set[tuple] = set()
+        visits = []
+        for lead in leads:
+            if lead.status != Lead.Status.TOUR_SCHEDULED:
+                continue
+            mine = rng.random() < 0.3
+            for _ in range(10):  # a few attempts to find a free slot
+                day = today + timedelta(days=rng.randint(1, 14))
+                if day.weekday() == 6:  # closed on Sundays
+                    continue
+                slot = rng.randint(0, 17)  # 09:00 .. 17:30
+                start = datetime.combine(day, time(9), tz) + timedelta(minutes=30 * slot)
+                keys = {("unit", lead.unit_id, start)} | ({("agent", start)} if mine else set())
+                if keys & taken:
+                    continue
+                taken |= keys
+                visits.append(
+                    Visit(
+                        lead=lead,
+                        unit_id=lead.unit_id,
+                        agent=agent if mine else None,
+                        starts_at=start,
+                        ends_at=start + timedelta(minutes=30),
+                        notes=rng.choice(["", "", "Bringing a co-signer.", "Asked about parking."]),
+                    )
+                )
+                break
+        return Visit.objects.bulk_create(visits)

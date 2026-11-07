@@ -6,11 +6,12 @@ from core.exceptions import DomainError
 from dashboard.routers import router as dashboard_router
 from leads.routers import router as leads_router
 from properties.routers import router as properties_router
+from visits.routers import router as visits_router
 
 api = NinjaAPI(
     title="Leaseflow API",
     version="1.0.0",
-    description="Leasing dashboard API: properties, units, leads and an AI reply assistant.",
+    description="Leasing dashboard API: properties, units, leads, tours and an AI reply assistant.",
     urls_namespace="api",
 )
 
@@ -25,6 +26,7 @@ api.add_router("/auth", auth_router)
 api.add_router("/", properties_router, auth=JWTAuth())
 api.add_router("/", leads_router, auth=JWTAuth())
 api.add_router("/", dashboard_router, auth=JWTAuth())
+api.add_router("/", visits_router, auth=JWTAuth())
 
 
 @api.get("/health", tags=["meta"])

@@ -91,6 +91,8 @@ describe('Lead detail', () => {
     await user.selectOptions(select, 'tour_scheduled')
     expect(select).toHaveValue('tour_scheduled') // optimistic
     expect(await screen.findByText('Could not update the status. Reverted.')).toBeInTheDocument()
-    expect(select).toHaveValue('new') // rolled back
+    // The alert is set inside the transition; React drops the optimistic value
+    // when the transition ends, which can land a render later.
+    await waitFor(() => expect(select).toHaveValue('new')) // rolled back
   })
 })

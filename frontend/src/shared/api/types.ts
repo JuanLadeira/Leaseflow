@@ -1,4 +1,4 @@
-// Mirrors the Django Ninja schemas (see backend/leasing/schemas.py).
+// Mirrors the Django Ninja schemas (see backend/<app>/schemas.py).
 // Decimals are serialized as strings by the API to avoid float rounding.
 
 export type UnitStatus = 'vacant' | 'notice' | 'occupied'
@@ -69,6 +69,7 @@ export interface LeadListItem {
   email: string
   status: LeadStatus
   source: LeadSource
+  unit_id: number | null
   unit_label: string | null
   property_name: string | null
   last_message_preview: string
@@ -102,6 +103,37 @@ export interface LeadDetail {
     rent: string
   } | null
   messages: Message[]
+}
+
+export const VISIT_STATUSES = ['scheduled', 'completed', 'canceled'] as const
+export type VisitStatus = (typeof VISIT_STATUSES)[number]
+
+export interface Visit {
+  id: number
+  lead_id: number
+  lead_name: string
+  unit_id: number
+  unit_label: string
+  property_id: number
+  property_name: string
+  agent_id: number | null
+  agent_name: string | null
+  starts_at: string
+  ends_at: string
+  status: VisitStatus
+  notes: string
+}
+
+export interface VisitIn {
+  lead_id: number
+  unit_id?: number | null
+  starts_at: string
+  ends_at: string
+  notes: string
+}
+
+export interface VisitConflict extends ApiError {
+  conflict: Visit | null
 }
 
 export interface Dashboard {

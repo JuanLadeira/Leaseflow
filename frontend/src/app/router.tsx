@@ -4,6 +4,7 @@ import { authRoutes } from '@/features/auth'
 import { dashboardRoutes } from '@/features/dashboard'
 import { leadsRoutes } from '@/features/leads'
 import { propertiesRoutes } from '@/features/properties'
+import { visitsRoutes } from '@/features/visits'
 import { RequireAuth } from '@/shared/auth/RequireAuth'
 import { FullPageSpinner } from '@/shared/ui/Spinner'
 import { Layout } from './Layout'
@@ -23,7 +24,7 @@ export const routes: RouteObject[] = [
         children: [
           {
             element: <Layout />,
-            children: [...dashboardRoutes, ...propertiesRoutes, ...leadsRoutes],
+            children: [...dashboardRoutes, ...propertiesRoutes, ...leadsRoutes, ...visitsRoutes],
           },
         ],
       },

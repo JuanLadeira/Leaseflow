@@ -30,7 +30,12 @@ export default function LeadDetailPage() {
               {lead.phone && <> · {lead.phone}</>} · via {LEAD_SOURCE_LABEL[lead.source]}
             </p>
           </div>
-          <LeadStatusSelect key={lead.id} leadId={lead.id} status={lead.status} />
+          <div className={styles.headerActions}>
+            <LeadStatusSelect key={lead.id} leadId={lead.id} status={lead.status} />
+            <Link to={`/visits?schedule=1&lead=${lead.id}`} className="btn">
+              Schedule tour
+            </Link>
+          </div>
         </div>
         <dl className={styles.facts}>
           {lead.unit && (
