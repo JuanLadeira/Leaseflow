@@ -10,6 +10,7 @@
   display: grid;
   place-items: center;
   padding: 2rem 1rem;
+  position: relative;
 }
 .form {
   width: 100%;
@@ -140,4 +141,10 @@
     width: 1.125rem;
     height: 1.125rem;
   }
+}
+
+.lang {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }

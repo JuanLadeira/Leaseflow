@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "usernameRequired": "Informe o usuário",
+    "passwordMin": "A senha precisa ter pelo menos 8 caracteres",
+    "invalidCredentials": "Usuário ou senha inválidos.",
+    "unreachable": "Não foi possível conectar ao servidor. Tente novamente em instantes."
+  },
+  "pitch": {
+    "label": "Sobre o Leaseflow",
+    "eyebrow": "Locação no piloto automático",
+    "headline": "Transforme cada contato de aluguel em um contrato assinado.",
+    "inbox": "Uma caixa de entrada para todos os leads, do Zillow a quem passa na porta",
+    "ai": "A IA escreve respostas com a unidade, o aluguel e a disponibilidade",
+    "tours": "Agende visitas sem conflito de unidade ou corretor"
+  },
+  "form": {
+    "title": "Bem-vindo de volta",
+    "subtitle": "Entre para gerenciar imóveis e leads.",
+    "demo": "Explorar com a conta demo",
+    "or": "ou entre com sua conta",
+    "username": "Usuário",
+    "password": "Senha",
+    "submit": "Entrar",
+    "submitting": "Entrando…",
+    "waking": "Acordando o servidor de demonstração. A hospedagem gratuita dorme quando fica parada, então o primeiro login pode levar até um minuto.",
+    "demoHint": "Conta demo:"
+  }
+}
