@@ -55,6 +55,15 @@ export const handlers = [
     })
     return new HttpResponse(stream, { headers: { 'Content-Type': 'text/event-stream' } })
   }),
+  http.get(`${API}/dashboard`, () =>
+    HttpResponse.json({
+      total_units: 110,
+      vacant_units: 20,
+      occupancy_rate: 0.82,
+      leads_by_status: { new: 100, contacted: 200, tour_scheduled: 0, applied: 0, won: 0, lost: 0 },
+      conversion_rate: 0,
+    }),
+  ),
   http.get(`${API}/visits`, () => HttpResponse.json([makeVisit({ start: tomorrowAt(10) })])),
   http.post(`${API}/visits`, async ({ request }) => {
     const body = (await request.json()) as { lead_id: number; starts_at: string; notes: string }

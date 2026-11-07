@@ -11,6 +11,7 @@
   --accent: #2f6fed;
   --accent-strong: #1f4fb8;
   --accent-bg: #e6eefd;
+  --on-accent: #ffffff;
   --info: #1d6fa5;
   --info-bg: #e3f1fa;
   --warn: #8a5a00;
@@ -64,6 +65,7 @@
   --accent: #6a9bff;
   --accent-strong: #9bbcff;
   --accent-bg: #1c2b47;
+  --on-accent: #0b1424;
   --info: #7cc3f0;
   --info-bg: #15293a;
   --warn: #f2c063;
@@ -135,7 +137,7 @@ a {
   top: -3rem;
   padding: 0.5rem 0.75rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: var(--radius-sm);
   z-index: 100;
 }
@@ -178,7 +180,7 @@ a {
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-strong);

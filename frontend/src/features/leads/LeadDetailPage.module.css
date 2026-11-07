@@ -71,7 +71,7 @@
 .outbound .bubble {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .bubbleMeta {
   font-size: 0.75rem;
