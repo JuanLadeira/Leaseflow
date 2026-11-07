@@ -1,5 +1,8 @@
 // VITE_API_URL wins (full URL, e.g. http://localhost/api in tests). On Render the
-// blueprint only knows the API's host name, so VITE_API_HOST builds the URL.
+// blueprint passes the API's service host instead, which is the internal name
+// (`leaseflow-api-xxxx`) without a domain, so the public onrender.com domain is added.
 const host = import.meta.env.VITE_API_HOST
+const publicHost = host && !host.includes('.') ? `${host}.onrender.com` : host
 
-export const API_URL = import.meta.env.VITE_API_URL ?? (host ? `https://${host}/api` : '/api')
+export const API_URL =
+  import.meta.env.VITE_API_URL ?? (publicHost ? `https://${publicHost}/api` : '/api')
