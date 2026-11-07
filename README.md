@@ -38,8 +38,8 @@ It is a full-stack monorepo (React 19 + TypeScript on the frontend, Django + Dja
 
 ## Live demo
 
-- App: _link added after the first Render deploy_
-- API docs: _link added after the first Render deploy_
+- App: https://leaseflow-web-8pqc.onrender.com
+- API docs (Swagger): https://leaseflow-api-8pqc.onrender.com/api/docs
 - Login: **`demo` / `leaseflow123`**
 
 Hosted on Render's free tier, so the API sleeps after 15 idle minutes and the first request can take about a minute.
