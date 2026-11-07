@@ -21,7 +21,3 @@ class UserOut(Schema):
     email: str
     first_name: str
     last_name: str
-
-
-class ErrorOut(Schema):
-    detail: str

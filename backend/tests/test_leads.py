@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from leasing.ai import build_context, fallback_reply
-from leasing.models import Lead, Message
+from leads.models import Lead, Message
+from leads.services import build_context, fallback_reply
 
 pytestmark = pytest.mark.django_db(transaction=True)
 

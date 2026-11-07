@@ -1,6 +1,6 @@
 import pytest
 
-from leasing.models import Property
+from properties.models import Property
 
 pytestmark = pytest.mark.django_db(transaction=True)
 

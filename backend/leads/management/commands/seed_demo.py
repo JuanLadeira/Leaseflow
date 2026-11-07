@@ -13,7 +13,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from leasing.models import Lead, Message, Property, Unit
+from leads.models import Lead, Message
+from properties.models import Property, Unit
 
 DEMO_USERNAME = "demo"
 DEMO_PASSWORD = "leaseflow123"

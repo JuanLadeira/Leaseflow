@@ -1,6 +1,6 @@
 import pytest
 
-from accounts.tokens import create_token
+from accounts.services import create_token
 
 pytestmark = pytest.mark.django_db(transaction=True)
 

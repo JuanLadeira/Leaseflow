@@ -4,8 +4,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test import AsyncClient
 
-from accounts.tokens import create_token
-from leasing.models import Lead, Message, Property, Unit
+from accounts.services import create_token
+from leads.models import Lead, Message
+from properties.models import Property, Unit
 
 
 @pytest.fixture
