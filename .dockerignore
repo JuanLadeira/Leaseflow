@@ -7,4 +7,4 @@
 frontend/dist
 frontend/coverage
 .git
-compose/.env
+.env

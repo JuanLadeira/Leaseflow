@@ -1,6 +1,6 @@
 # Production-like stack: immutable images, nginx serving the SPA and proxying /api.
-#   cp compose/.env.example compose/.env   # set real secrets
-#   docker compose -f compose/docker-compose.prod.yml up --build -d
+#   cp .env.example .env   # set real secrets
+#   docker compose -f docker-compose.prod.yml up --build -d
 # App: http://localhost:8080
 name: leaseflow-prod
 
@@ -20,7 +20,7 @@ services:
 
   backend:
     build:
-      context: ..
+      context: .
       dockerfile: compose/backend/Dockerfile
       target: prod
     env_file:
@@ -41,7 +41,7 @@ services:
 
   frontend:
     build:
-      context: ..
+      context: .
       dockerfile: compose/frontend/Dockerfile
       target: prod
     ports: ["8080:80"]
