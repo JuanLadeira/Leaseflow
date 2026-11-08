@@ -14,3 +14,16 @@ async def active_user_exists(user_id: int) -> bool:
 
 async def authenticate(username: str, password: str) -> AbstractBaseUser | None:
     return await aauthenticate(username=username, password=password)
+
+
+def sync_group_permissions(name: str, perms: list[str]) -> None:
+    """Sync (post_migrate runs outside the event loop): make `name` hold exactly `perms`."""
+    from django.contrib.auth.models import Group, Permission
+    from django.db.models import Q
+
+    group, _ = Group.objects.get_or_create(name=name)
+    query = Q()
+    for perm in perms:
+        app_label, codename = perm.split(".")
+        query |= Q(content_type__app_label=app_label, codename=codename)
+    group.permissions.set(Permission.objects.filter(query))

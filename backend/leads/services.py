@@ -10,8 +10,10 @@ import asyncio
 import json
 from collections.abc import AsyncIterator
 
+from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
 
+from accounts.permissions import portfolio_of, require
 from core import llm
 from core.exceptions import NotFoundError
 from leads import repositories
@@ -33,9 +35,14 @@ def _unit_summary(lead: Lead) -> dict | None:
     }
 
 
-async def list_leads(status: str | None, search: str | None, limit: int) -> list[dict]:
+async def list_leads(
+    user: AbstractBaseUser, status: str | None, search: str | None, limit: int
+) -> list[dict]:
+    await require(user, "leads.view_lead")
     term = search.strip() if search else None
-    leads = await repositories.list_leads(status, term, max(1, min(limit, 5000)))
+    leads = await repositories.list_leads(
+        portfolio_of(user), status, term, max(1, min(limit, 5000))
+    )
     return [
         {
             "id": lead.pk,
@@ -52,15 +59,17 @@ async def list_leads(status: str | None, search: str | None, limit: int) -> list
     ]
 
 
-async def _get_or_404(lead_id: int) -> Lead:
-    lead = await repositories.get_lead(lead_id)
+async def _get_or_404(user: AbstractBaseUser, lead_id: int) -> Lead:
+    """Leads outside the user's portfolio are reported as missing, never as forbidden."""
+    lead = await repositories.get_lead(portfolio_of(user), lead_id)
     if lead is None:
         raise NotFoundError("Lead not found.")
     return lead
 
 
-async def get_lead_detail(lead_id: int) -> dict:
-    lead = await _get_or_404(lead_id)
+async def get_lead_detail(user: AbstractBaseUser, lead_id: int) -> dict:
+    await require(user, "leads.view_lead", "leads.view_message")
+    lead = await _get_or_404(user, lead_id)
     return {
         "id": lead.pk,
         "full_name": lead.full_name,
@@ -77,15 +86,19 @@ async def get_lead_detail(lead_id: int) -> dict:
     }
 
 
-async def change_status(lead_id: int, status: str) -> dict:
-    lead = await _get_or_404(lead_id)
+async def change_status(user: AbstractBaseUser, lead_id: int, status: str) -> dict:
+    await require(user, "leads.change_lead")
+    lead = await _get_or_404(user, lead_id)
     await repositories.update_lead(lead, status=status, last_activity_at=timezone.now())
-    return await get_lead_detail(lead_id)
+    return await get_lead_detail(user, lead_id)
 
 
-async def send_message(lead_id: int, body: str, ai_generated: bool) -> Message:
+async def send_message(
+    user: AbstractBaseUser, lead_id: int, body: str, ai_generated: bool
+) -> Message:
     """Record an agent reply. The first reply moves a `new` lead to `contacted`."""
-    lead = await _get_or_404(lead_id)
+    await require(user, "leads.add_message")
+    lead = await _get_or_404(user, lead_id)
     message = await repositories.create_message(
         lead, direction=Message.Direction.OUTBOUND, body=body, ai_generated=ai_generated
     )
@@ -177,7 +190,24 @@ async def stream_reply_suggestion(
     yield sse("done", {"model": llm.model_name() if use_llm else "offline-template"})
 
 
-async def reply_suggestion_stream(lead_id: int) -> AsyncIterator[str]:
+async def reply_suggestion_stream(user: AbstractBaseUser, lead_id: int) -> AsyncIterator[str]:
     # Resolve the lead before streaming starts so a missing lead is a clean 404.
-    lead = await get_lead_detail(lead_id)
+    lead = await get_lead_detail(user, lead_id)
     return stream_reply_suggestion(lead)
+
+
+async def draft_reply(user: AbstractBaseUser, lead_id: int) -> dict:
+    """Non-streaming variant for callers that want the whole draft (the MCP tool)."""
+    lead = await get_lead_detail(user, lead_id)
+    use_llm = llm.is_configured()
+    if use_llm:
+        text = "".join(
+            [chunk async for chunk in llm.stream_text(SYSTEM_PROMPT, build_context(lead))]
+        )
+    else:
+        text = fallback_reply(lead)
+    return {
+        "lead_id": lead_id,
+        "text": text,
+        "model": llm.model_name() if use_llm else "offline-template",
+    }
