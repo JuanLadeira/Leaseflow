@@ -63,3 +63,8 @@ async def unit_counts(manager_id: int | None) -> tuple[int, int]:
         vacant=Count("id", filter=Q(status=Unit.Status.VACANT), distinct=True),
     )
     return agg["total"], agg["vacant"]
+
+
+async def managed_property_ids(manager_id: int) -> list[int]:
+    qs = Property.objects.filter(managers=manager_id).order_by("pk").values_list("pk", flat=True)
+    return [pk async for pk in qs]

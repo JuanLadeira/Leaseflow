@@ -70,3 +70,9 @@ async def create_unit(user: AbstractBaseUser, property_id: int, data: dict):
     if not await repositories.property_exists(portfolio_of(user), property_id):
         raise NotFoundError("Property not found.")
     return await repositories.create_unit(property_id, **data)
+
+
+async def managed_property_ids(user: AbstractBaseUser) -> list[int] | None:
+    """The user's portfolio as ids, or None when unrestricted (superuser)."""
+    scope = portfolio_of(user)
+    return None if scope is None else await repositories.managed_property_ids(scope)

@@ -31,6 +31,9 @@ services:
       DJANGO_DEBUG: "false"
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
       SEED_DEMO: ${SEED_DEMO:-true}
+      # Public URL MCP clients connect to (through nginx); agent tokens are bound to it.
+      MCP_RESOURCE_URL: ${MCP_RESOURCE_URL:-http://localhost:8080/mcp}
+      MCP_ISSUER_URL: ${MCP_ISSUER_URL:-http://localhost:8080/api}
     depends_on:
       db: { condition: service_healthy }
     healthcheck:
