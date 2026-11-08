@@ -314,3 +314,73 @@ async def test_asgi_router_sends_mcp_paths_to_the_mcp_app():
         await application({"type": "http", "path": path}, None, None)
     await application({"type": "lifespan"}, None, None)
     assert seen == ["mcp", "mcp", "django", "django", "mcp"]
+
+
+# --- Visits ---------------------------------------------------------------------------
+
+
+def _slot(days: int = 1, hour: int = 15):
+    start = (timezone.now() + timedelta(days=days)).replace(
+        hour=hour, minute=0, second=0, microsecond=0
+    )
+    return start.isoformat(), (start + timedelta(minutes=30)).isoformat()
+
+
+async def test_agent_books_a_tour_and_conflicts_are_audited(connect, user, lead):
+    start, end = _slot()
+    async with connect(await agent_token(user)) as mcp:
+        visit = result(
+            await mcp.call_tool(
+                "schedule_visit", {"lead_id": lead.pk, "starts_at": start, "ends_at": end}
+            )
+        )
+        assert visit["agent_id"] == user.pk and visit["unit_label"] == "1B"
+        again = await mcp.call_tool(
+            "schedule_visit", {"lead_id": lead.pk, "starts_at": start, "ends_at": end}
+        )
+        assert "already has a visit" in error(again)
+        bad = await mcp.call_tool(
+            "schedule_visit", {"lead_id": lead.pk, "starts_at": end, "ends_at": start}
+        )
+        assert "must end after it starts" in error(bad)
+        assert [v["id"] for v in result(await mcp.call_tool("list_visits", {}))] == [visit["id"]]
+
+    await lead.arefresh_from_db()
+    assert lead.status == Lead.Status.TOUR_SCHEDULED
+    outcomes = [e.outcome async for e in AuditEvent.objects.order_by("id")]
+    assert outcomes == ["ok", "conflict", "invalid", "ok"]
+
+
+async def test_agent_cannot_book_or_cancel_outside_the_portfolio(connect, user, other_lead):
+    from visits.models import Visit
+
+    start, end = _slot()
+    theirs = await Visit.objects.acreate(
+        lead=other_lead,
+        unit_id=other_lead.unit_id,
+        starts_at=timezone.now() + timedelta(days=2),
+        ends_at=timezone.now() + timedelta(days=2, minutes=30),
+    )
+    async with connect(await agent_token(user)) as mcp:
+        res = await mcp.call_tool(
+            "schedule_visit", {"lead_id": other_lead.pk, "starts_at": start, "ends_at": end}
+        )
+        assert error(res).endswith("Lead not found.")
+        assert result(await mcp.call_tool("list_visits", {})) == []
+        res = await mcp.call_tool(
+            "update_visit_status", {"visit_id": theirs.pk, "status": "canceled"}
+        )
+        assert error(res).endswith("Visit not found.")
+    await theirs.arefresh_from_db()
+    assert theirs.status == Visit.Status.SCHEDULED
+
+
+async def test_viewer_agent_cannot_book_tours(connect, viewer, lead, property_with_units):
+    await property_with_units.managers.aadd(viewer)
+    start, end = _slot()
+    async with connect(await agent_token(viewer)) as mcp:
+        assert result(await mcp.call_tool("list_visits", {})) == []
+        res = await mcp.call_tool(
+            "schedule_visit", {"lead_id": lead.pk, "starts_at": start, "ends_at": end}
+        )
+        assert "visits.add_visit" in error(res)

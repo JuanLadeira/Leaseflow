@@ -25,6 +25,7 @@ _READ = [
     "properties.view_unit",
     "leads.view_lead",
     "leads.view_message",
+    "visits.view_visit",
 ]
 
 ROLES: dict[str, list[str]] = {
@@ -34,6 +35,8 @@ ROLES: dict[str, list[str]] = {
         "properties.add_unit",
         "leads.change_lead",
         "leads.add_message",
+        "visits.add_visit",
+        "visits.change_visit",
     ],
     VIEWER: _READ,
 }

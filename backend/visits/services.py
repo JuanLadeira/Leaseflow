@@ -4,12 +4,16 @@
 - No double booking: a unit, or an agent, can't have two scheduled visits that overlap.
 - Visits can't be booked in the past.
 - Booking a tour moves an early-stage lead (new / contacted) to `tour_scheduled`.
+- Every call acts as `user`: role permissions and the property portfolio apply
+  (accounts.permissions). Leads, units and visits outside it are "not found".
 """
 
 from datetime import datetime
 
+from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
 
+from accounts.permissions import portfolio_of, require
 from core.exceptions import ConflictError, DomainError, NotFoundError
 from leads.models import Lead
 from visits import repositories
@@ -48,17 +52,22 @@ def to_out(visit: Visit) -> dict:
 
 
 async def list_visits(
+    user: AbstractBaseUser,
     start: datetime | None = None,
     end: datetime | None = None,
     unit_id: int | None = None,
     lead_id: int | None = None,
     include_canceled: bool = False,
 ) -> list[dict]:
-    visits = await repositories.list_visits(start, end, unit_id, lead_id, include_canceled)
+    await require(user, "visits.view_visit")
+    visits = await repositories.list_visits(
+        portfolio_of(user), start, end, unit_id, lead_id, include_canceled
+    )
     return [to_out(v) for v in visits]
 
 
 async def schedule_visit(
+    user: AbstractBaseUser,
     *,
     lead_id: int,
     unit_id: int | None,
@@ -67,14 +76,16 @@ async def schedule_visit(
     notes: str = "",
     agent_id: int | None = None,
 ) -> dict:
-    lead = await repositories.get_lead(lead_id)
+    await require(user, "visits.add_visit")
+    scope = portfolio_of(user)
+    lead = await repositories.get_lead(scope, lead_id)
     if lead is None:
         raise NotFoundError("Lead not found.")
 
     unit_id = unit_id or lead.unit_id
     if unit_id is None:
         raise DomainError("This lead has no unit of interest. Pick a unit.")
-    if await repositories.get_unit(unit_id) is None:
+    if await repositories.get_unit(scope, unit_id) is None:
         raise NotFoundError("Unit not found.")
 
     now = timezone.now()
@@ -100,8 +111,9 @@ async def schedule_visit(
     return to_out(visit)
 
 
-async def change_status(visit_id: int, status: str) -> dict:
-    visit = await repositories.get_visit(visit_id)
+async def change_status(user: AbstractBaseUser, visit_id: int, status: str) -> dict:
+    await require(user, "visits.change_visit")
+    visit = await repositories.get_visit(portfolio_of(user), visit_id)
     if visit is None:
         raise NotFoundError("Visit not found.")
     if visit.status != Visit.Status.SCHEDULED and status == Visit.Status.SCHEDULED:

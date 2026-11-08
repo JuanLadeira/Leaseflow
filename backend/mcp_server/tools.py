@@ -6,6 +6,7 @@ needs and then calls the owning app's service *as the authenticated user*,
 so role and portfolio checks are exactly the REST API's.
 """
 
+from datetime import datetime
 from typing import Annotated
 from uuid import uuid4
 
@@ -29,6 +30,9 @@ from mcp_server.security import AgentTokenVerifier
 from properties import services as property_services
 from properties.models import Unit
 from properties.schemas import PropertyDetailOut, PropertyOut, UnitIn, UnitOut
+from visits import services as visit_services
+from visits.models import Visit
+from visits.schemas import VisitIn, VisitOut
 
 INSTRUCTIONS = """Leaseflow is a leasing dashboard. You act as the signed-in user who
 created your token: you only see the properties they manage (and those
@@ -211,6 +215,66 @@ def build_server() -> MCPServer:
             return DashboardOut.model_validate(await dashboard_services.get_metrics(agent.user))
 
         return await _run(ctx, "get_dashboard", ("properties:read", "leads:read"), action)
+
+    @mcp.tool(annotations=READ)
+    async def list_visits(
+        ctx: Context,
+        start: Annotated[datetime | None, Field(description="ISO 8601 with offset")] = None,
+        end: Annotated[datetime | None, Field(description="ISO 8601 with offset")] = None,
+        lead_id: int | None = None,
+        include_canceled: bool = False,
+    ) -> list[VisitOut]:
+        """Tours in your portfolio overlapping [start, end)."""
+
+        async def action(agent):
+            rows = await visit_services.list_visits(
+                agent.user, start, end, lead_id=lead_id, include_canceled=include_canceled
+            )
+            return [VisitOut.model_validate(v) for v in rows]
+
+        return await _run(
+            ctx, "list_visits", ("visits:read",), action,
+            start=start, end=end, lead_id=lead_id, include_canceled=include_canceled,
+        )  # fmt: skip
+
+    @mcp.tool(annotations=SEND)
+    async def schedule_visit(
+        ctx: Context,
+        lead_id: int,
+        starts_at: Annotated[datetime, Field(description="ISO 8601 with offset")],
+        ends_at: Annotated[datetime, Field(description="ISO 8601 with offset, max 2h later")],
+        unit_id: Annotated[int | None, Field(description="Defaults to the lead's unit")] = None,
+        notes: Annotated[str, Field(max_length=1000)] = "",
+    ) -> VisitOut:
+        """Book a tour with you as the agent. Fails on overlaps for the unit or for you.
+        Moves a new or contacted lead to tour_scheduled."""
+
+        async def action(agent):
+            payload = VisitIn(
+                lead_id=lead_id, unit_id=unit_id, starts_at=starts_at, ends_at=ends_at, notes=notes
+            )
+            visit = await visit_services.schedule_visit(
+                agent.user, **payload.dict(), agent_id=agent.user.pk
+            )
+            return VisitOut.model_validate(visit)
+
+        return await _run(
+            ctx, "schedule_visit", ("visits:write",), action,
+            lead_id=lead_id, unit_id=unit_id, starts_at=starts_at, ends_at=ends_at, notes=notes,
+        )  # fmt: skip
+
+    @mcp.tool(annotations=WRITE)
+    async def update_visit_status(ctx: Context, visit_id: int, status: Visit.Status) -> VisitOut:
+        """Mark a tour completed or canceled. Canceled tours free their slot."""
+
+        async def action(agent):
+            visit = await visit_services.change_status(agent.user, visit_id, status)
+            return VisitOut.model_validate(visit)
+
+        return await _run(
+            ctx, "update_visit_status", ("visits:write",), action,
+            visit_id=visit_id, status=status,
+        )  # fmt: skip
 
     return mcp
 

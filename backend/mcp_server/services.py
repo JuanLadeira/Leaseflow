@@ -26,11 +26,12 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
 from mcp.server.auth.middleware.auth_context import get_access_token
+from pydantic import ValidationError
 
 from accounts import repositories as accounts_repo
 from accounts import services as accounts_services
 from accounts.services import InvalidToken
-from core.exceptions import DomainError, NotFoundError, PermissionDeniedError
+from core.exceptions import ConflictError, DomainError, NotFoundError, PermissionDeniedError
 from mcp_server import repositories
 from mcp_server.models import AgentToken, AuditEvent
 from properties import services as properties_services
@@ -42,6 +43,8 @@ SCOPES: dict[str, str] = {
     "properties:write": "Add units to properties.",
     "leads:read": "List and read leads and conversations, draft replies.",
     "leads:write": "Change a lead's status and send messages to prospects.",
+    "visits:read": "Read the tour agenda.",
+    "visits:write": "Book and cancel tours.",
 }
 
 MAX_LOGGED_STRING = 120
@@ -209,6 +212,7 @@ _OUTCOMES: list[tuple[type[Exception], str]] = [
     (ScopeDeniedError, AuditEvent.Outcome.SCOPE_DENIED),
     (PermissionDeniedError, AuditEvent.Outcome.FORBIDDEN),
     (NotFoundError, AuditEvent.Outcome.NOT_FOUND),
+    (ConflictError, AuditEvent.Outcome.CONFLICT),
     (DomainError, AuditEvent.Outcome.INVALID),
 ]
 
@@ -231,6 +235,10 @@ async def run_tool(
         if missing:
             raise ScopeDeniedError(f"This token lacks the scope(s): {', '.join(missing)}.")
         return await action(agent)
+    except ValidationError as exc:  # schema rules beyond the tool's input schema
+        outcome = AuditEvent.Outcome.INVALID
+        detail = "; ".join(e["msg"].removeprefix("Value error, ") for e in exc.errors())
+        raise ToolFailure(detail) from exc
     except DomainError as exc:
         outcome = next(o for cls, o in _OUTCOMES if isinstance(exc, cls))
         detail = exc.detail

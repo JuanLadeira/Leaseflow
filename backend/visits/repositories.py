@@ -1,4 +1,8 @@
-"""Data access for visits. Only ORM code lives here."""
+"""Data access for visits. Only ORM code lives here.
+
+Reads take `manager_id` (None = unrestricted): a visit, its lead and its unit
+belong to the portfolio of whoever manages the unit's property.
+"""
 
 from datetime import datetime
 
@@ -7,18 +11,24 @@ from properties.models import Unit
 from visits.models import Visit
 
 
-def _with_relations():
-    return Visit.objects.select_related("lead", "unit__property", "agent")
+def _scoped(qs, manager_id: int | None, path: str):
+    return qs if manager_id is None else qs.filter(**{path: manager_id})
+
+
+def _with_relations(manager_id: int | None = None):
+    qs = Visit.objects.select_related("lead", "unit__property", "agent")
+    return _scoped(qs, manager_id, "unit__property__managers")
 
 
 async def list_visits(
+    manager_id: int | None,
     start: datetime | None,
     end: datetime | None,
     unit_id: int | None,
     lead_id: int | None,
     include_canceled: bool,
 ) -> list[Visit]:
-    qs = _with_relations()
+    qs = _with_relations(manager_id)
     if start:
         qs = qs.filter(ends_at__gt=start)
     if end:
@@ -32,16 +42,20 @@ async def list_visits(
     return [visit async for visit in qs]
 
 
-async def get_visit(visit_id: int) -> Visit | None:
-    return await _with_relations().filter(pk=visit_id).afirst()
+async def get_visit(manager_id: int | None, visit_id: int) -> Visit | None:
+    return await _with_relations(manager_id).filter(pk=visit_id).afirst()
 
 
-async def get_lead(lead_id: int) -> Lead | None:
-    return await Lead.objects.select_related("unit__property").filter(pk=lead_id).afirst()
+async def get_lead(manager_id: int | None, lead_id: int) -> Lead | None:
+    qs = _scoped(
+        Lead.objects.select_related("unit__property"), manager_id, "unit__property__managers"
+    )
+    return await qs.filter(pk=lead_id).afirst()
 
 
-async def get_unit(unit_id: int) -> Unit | None:
-    return await Unit.objects.select_related("property").filter(pk=unit_id).afirst()
+async def get_unit(manager_id: int | None, unit_id: int) -> Unit | None:
+    qs = _scoped(Unit.objects.select_related("property"), manager_id, "property__managers")
+    return await qs.filter(pk=unit_id).afirst()
 
 
 async def find_overlap(
@@ -59,7 +73,7 @@ async def find_overlap(
 
 async def create_visit(**fields) -> Visit:
     visit = await Visit.objects.acreate(**fields)
-    return await get_visit(visit.pk)
+    return await get_visit(None, visit.pk)
 
 
 async def update_visit(visit: Visit, **fields) -> Visit:

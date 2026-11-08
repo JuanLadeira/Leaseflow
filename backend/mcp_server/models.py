@@ -41,6 +41,7 @@ class AuditEvent(models.Model):
         NOT_FOUND = "not_found", "Not found (or outside the user's portfolio)"
         FORBIDDEN = "forbidden", "Forbidden by the user's role"
         SCOPE_DENIED = "scope_denied", "Token lacks the scope"
+        CONFLICT = "conflict", "Conflicts with existing data"
         INVALID = "invalid", "Invalid arguments"
         ERROR = "error", "Unexpected error"
         UNAUTHENTICATED = "unauthenticated", "Token rejected"

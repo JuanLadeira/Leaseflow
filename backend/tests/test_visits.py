@@ -94,9 +94,14 @@ async def test_rejects_past_visits_and_bad_ranges(auth_client, lead):
     assert (await _book(auth_client, lead, start, start + timedelta(hours=3))).status_code == 422
 
 
-async def test_lead_without_unit_needs_an_explicit_unit(auth_client):
+async def test_lead_without_unit_needs_an_explicit_unit(auth_client, user):
+    """Leads with no unit of interest belong to no portfolio: only superusers see them."""
     lead = await Lead.objects.acreate(full_name="No Unit", email="nu@example.com")
     start, end = _slot()
+    assert (await _book(auth_client, lead, start, end)).status_code == 404
+
+    user.is_superuser = True
+    await user.asave()
     res = await _book(auth_client, lead, start, end)
     assert res.status_code == 400
     assert "unit" in res.json()["detail"]
@@ -117,3 +122,29 @@ async def test_list_visits_filters_by_range(auth_client, lead):
 
 async def test_visits_require_auth(anon_client):
     assert (await anon_client.get("/api/visits")).status_code == 401
+
+
+async def test_cannot_book_or_see_visits_outside_the_portfolio(auth_client, other_lead):
+    start, end = _slot()
+    assert (await _book(auth_client, other_lead, start, end)).status_code == 404
+    await Visit.objects.acreate(
+        lead=other_lead, unit_id=other_lead.unit_id, starts_at=start, ends_at=end
+    )
+    assert (await auth_client.get("/api/visits")).json() == []
+    visit = await Visit.objects.aget(lead=other_lead)
+    res = await auth_client.patch(
+        f"/api/visits/{visit.pk}", {"status": "canceled"}, content_type="application/json"
+    )
+    assert res.status_code == 404
+
+
+async def test_viewer_sees_the_agenda_but_cannot_book(viewer, lead, property_with_units):
+    from tests.conftest import client_for
+
+    await property_with_units.managers.aadd(viewer)
+    client = client_for(viewer)
+    assert (await client.get("/api/visits")).status_code == 200
+    start, end = _slot()
+    res = await _book(client, lead, start, end)
+    assert res.status_code == 403
+    assert "visits.add_visit" in res.json()["detail"]
