@@ -49,12 +49,15 @@ SEND = ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=
 def _meta(ctx: Context) -> services.CallMeta:
     headers = ctx.headers or {}
     request = getattr(ctx.request_context, "request", None)
-    client = getattr(request, "client", None)
+    peer = getattr(getattr(request, "client", None), "host", None)
+    # Behind Render or nginx the socket peer is the proxy; trust its header only then.
+    forwarded = headers.get("x-forwarded-for", "").split(",")[0].strip()
+    ip = (forwarded if settings.MCP_TRUST_FORWARDED_FOR else None) or peer
     return services.CallMeta(
         # The JSON-RPC id repeats across connections; prefer the caller's correlation id.
         request_id=headers.get("x-request-id") or f"{uuid4().hex[:12]}:{ctx.request_id}",
         client=headers.get("user-agent", ""),
-        ip=getattr(client, "host", None),
+        ip=ip,
     )
 
 

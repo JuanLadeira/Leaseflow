@@ -122,10 +122,15 @@ ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")
 # --- MCP server ---------------------------------------------------------------
 # Streamable HTTP endpoint mounted next to Django (config/asgi.py). Agent tokens
 # carry `aud` = MCP_RESOURCE_URL, so set it to the public URL clients connect to.
-MCP_RESOURCE_URL = os.environ.get("MCP_RESOURCE_URL", "http://localhost:8000/mcp")
-MCP_ISSUER_URL = os.environ.get("MCP_ISSUER_URL", "http://localhost:8000/api")
+# On Render, RENDER_EXTERNAL_URL / RENDER_EXTERNAL_HOSTNAME are set automatically.
+_PUBLIC_URL = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000").rstrip("/")
+MCP_RESOURCE_URL = os.environ.get("MCP_RESOURCE_URL", f"{_PUBLIC_URL}/mcp")
+MCP_ISSUER_URL = os.environ.get("MCP_ISSUER_URL", f"{_PUBLIC_URL}/api")
 # DNS-rebinding protection: Host/Origin headers the MCP endpoint accepts.
-MCP_ALLOWED_HOSTS = env_list("MCP_ALLOWED_HOSTS", "localhost:*,127.0.0.1:*,backend:*")
+MCP_ALLOWED_HOSTS = env_list("MCP_ALLOWED_HOSTS", "localhost,localhost:*,127.0.0.1:*,backend:*")
+if _render_host := os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
+    MCP_ALLOWED_HOSTS.append(_render_host)
+MCP_TRUST_FORWARDED_FOR = env_bool("DJANGO_BEHIND_PROXY")  # client IP in the audit trail
 MCP_ALLOWED_ORIGINS = env_list("MCP_ALLOWED_ORIGINS", "http://localhost:*,http://127.0.0.1:*")
 
 # --- Logging ------------------------------------------------------------------
