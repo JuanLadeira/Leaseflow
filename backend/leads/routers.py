@@ -15,31 +15,33 @@ from leads.schemas import (
 router = Router(tags=["leads"])
 
 
-@router.get("/leads", response=list[LeadListOut])
+@router.get("/leads", response={200: list[LeadListOut], 403: ErrorOut})
 async def list_leads(request, filters: Query[LeadFilters]):
-    return await services.list_leads(filters.status, filters.search, filters.limit)
+    return await services.list_leads(request.auth, filters.status, filters.search, filters.limit)
 
 
-@router.get("/leads/{lead_id}", response={200: LeadDetailOut, 404: ErrorOut})
+@router.get("/leads/{lead_id}", response={200: LeadDetailOut, 403: ErrorOut, 404: ErrorOut})
 async def get_lead(request, lead_id: int):
-    return await services.get_lead_detail(lead_id)
+    return await services.get_lead_detail(request.auth, lead_id)
 
 
-@router.patch("/leads/{lead_id}", response={200: LeadDetailOut, 404: ErrorOut})
+@router.patch("/leads/{lead_id}", response={200: LeadDetailOut, 403: ErrorOut, 404: ErrorOut})
 async def update_lead_status(request, lead_id: int, payload: LeadStatusIn):
-    return await services.change_status(lead_id, payload.status)
+    return await services.change_status(request.auth, lead_id, payload.status)
 
 
-@router.post("/leads/{lead_id}/messages", response={201: MessageOut, 404: ErrorOut})
+@router.post("/leads/{lead_id}/messages", response={201: MessageOut, 403: ErrorOut, 404: ErrorOut})
 async def send_message(request, lead_id: int, payload: MessageIn):
-    message = await services.send_message(lead_id, payload.body, payload.ai_generated)
+    message = await services.send_message(request.auth, lead_id, payload.body, payload.ai_generated)
     return Status(201, message)
 
 
-@router.post("/leads/{lead_id}/reply-suggestion", response={404: ErrorOut})
+@router.post("/leads/{lead_id}/reply-suggestion", response={403: ErrorOut, 404: ErrorOut})
 async def reply_suggestion(request, lead_id: int):
     """Stream an AI-drafted reply as Server-Sent Events (`delta`, `done`, `error`)."""
-    stream = await services.reply_suggestion_stream(lead_id, request.headers.get("Accept-Language"))
+    stream = await services.reply_suggestion_stream(
+        request.auth, lead_id, request.headers.get("Accept-Language")
+    )
     response = StreamingHttpResponse(stream, content_type="text/event-stream")
     response["Cache-Control"] = "no-cache"
     response["X-Accel-Buffering"] = "no"  # disable proxy buffering (nginx)

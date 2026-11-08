@@ -21,11 +21,12 @@ async def test_list_properties_includes_occupancy(auth_client, property_with_uni
     assert item["occupancy_rate"] == 0.75
 
 
-async def test_list_properties_search_and_pagination(auth_client, transactional_db):
+async def test_list_properties_search_and_pagination(auth_client, user):
     for i in range(15):
-        await Property.objects.acreate(
+        prop = await Property.objects.acreate(
             name=f"Tower {i}", address="1 Main", city="Austin" if i % 2 else "Denver", state="TX"
         )
+        await prop.managers.aadd(user)
     res = await auth_client.get("/api/properties", {"search": "austin", "page_size": 5, "page": 2})
     body = res.json()
     assert body["count"] == 7

@@ -22,5 +22,11 @@ class AuthenticationError(DomainError):
     status_code = 401
 
 
+class PermissionDeniedError(DomainError):
+    """The user is authenticated but their role does not allow the action."""
+
+    status_code = 403
+
+
 class ConflictError(DomainError):
     status_code = 409

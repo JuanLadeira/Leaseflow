@@ -23,21 +23,21 @@ def test_page_params_are_clamped():
     assert (params.page, params.page_size, params.offset) == (1, 100, 0)
 
 
-async def test_first_reply_moves_new_lead_to_contacted(lead):
-    await lead_services.send_message(lead.pk, "Hi!", ai_generated=False)
-    detail = await lead_services.get_lead_detail(lead.pk)
+async def test_first_reply_moves_new_lead_to_contacted(user, lead):
+    await lead_services.send_message(user, lead.pk, "Hi!", ai_generated=False)
+    detail = await lead_services.get_lead_detail(user, lead.pk)
     assert detail["status"] == "contacted"
 
 
-async def test_reply_does_not_regress_advanced_status(lead):
-    await lead_services.change_status(lead.pk, "applied")
-    await lead_services.send_message(lead.pk, "Got your application", ai_generated=False)
-    assert (await lead_services.get_lead_detail(lead.pk))["status"] == "applied"
+async def test_reply_does_not_regress_advanced_status(user, lead):
+    await lead_services.change_status(user, lead.pk, "applied")
+    await lead_services.send_message(user, lead.pk, "Got your application", ai_generated=False)
+    assert (await lead_services.get_lead_detail(user, lead.pk))["status"] == "applied"
 
 
-async def test_missing_lead_raises_not_found(transactional_db):
+async def test_missing_lead_raises_not_found(user):
     with pytest.raises(NotFoundError):
-        await lead_services.get_lead_detail(12345)
+        await lead_services.get_lead_detail(user, 12345)
 
 
 async def test_login_with_wrong_password_raises(user):

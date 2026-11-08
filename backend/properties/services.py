@@ -1,5 +1,13 @@
-"""Business rules for the portfolio: occupancy, pagination and unit creation."""
+"""Business rules for the portfolio: occupancy, pagination and unit creation.
 
+Every public function takes the acting `user` first. It is checked twice:
+its role must grant the Django permission, and only properties in its
+portfolio are visible (accounts.permissions).
+"""
+
+from django.contrib.auth.models import AbstractBaseUser
+
+from accounts.permissions import portfolio_of, require
 from core.exceptions import NotFoundError
 from core.pagination import PageParams
 from properties import repositories
@@ -26,10 +34,15 @@ def to_summary(prop: Property) -> dict:
     }
 
 
-async def list_properties(search: str | None, page: int, page_size: int) -> dict:
+async def list_properties(
+    user: AbstractBaseUser, search: str | None, page: int, page_size: int
+) -> dict:
+    await require(user, "properties.view_property")
     params = PageParams.clamp(page, page_size)
     term = search.strip() if search else None
-    items, count = await repositories.search_properties(term, params.offset, params.page_size)
+    items, count = await repositories.search_properties(
+        portfolio_of(user), term, params.offset, params.page_size
+    )
     return {
         "items": [to_summary(p) for p in items],
         "count": count,
@@ -38,18 +51,22 @@ async def list_properties(search: str | None, page: int, page_size: int) -> dict
     }
 
 
-async def get_property(property_id: int) -> dict:
-    prop = await repositories.get_property_with_stats(property_id)
+async def get_property(user: AbstractBaseUser, property_id: int) -> dict:
+    await require(user, "properties.view_property", "properties.view_unit")
+    prop = await repositories.get_property_with_stats(portfolio_of(user), property_id)
     if prop is None:
         raise NotFoundError("Property not found.")
     return {**to_summary(prop), "units": await repositories.list_units(property_id)}
 
 
-async def create_property(data: dict) -> dict:
-    return to_summary(await repositories.create_property(**data))
+async def create_property(user: AbstractBaseUser, data: dict) -> dict:
+    """The creator becomes the property's first manager."""
+    await require(user, "properties.add_property")
+    return to_summary(await repositories.create_property(user.pk, **data))
 
 
-async def create_unit(property_id: int, data: dict):
-    if not await repositories.property_exists(property_id):
+async def create_unit(user: AbstractBaseUser, property_id: int, data: dict):
+    await require(user, "properties.add_unit")
+    if not await repositories.property_exists(portfolio_of(user), property_id):
         raise NotFoundError("Property not found.")
     return await repositories.create_unit(property_id, **data)

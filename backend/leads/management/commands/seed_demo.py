@@ -9,16 +9,20 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
+from accounts.permissions import LEASING_AGENT, VIEWER
 from leads.models import Lead, Message
 from properties.models import Property, Unit
 from visits.models import Visit
 
 DEMO_USERNAME = "demo"
 DEMO_PASSWORD = "leaseflow123"
+VIEWER_USERNAME = "viewer"
+VIEWER_PROPERTY_COUNT = 4  # the viewer only sees part of the portfolio
 
 PROPERTIES = [
     ("The Mercer Lofts", "120 Mercer St", "New York", "NY"),
@@ -69,20 +73,14 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, leads: int, reset: bool, **options):
         rng = random.Random(42)
-        User = get_user_model()
-        user, created = User.objects.get_or_create(
-            username=DEMO_USERNAME,
-            defaults={"email": "demo@leaseflow.dev", "first_name": "Demo", "last_name": "Agent"},
-        )
-        if created:
-            user.set_password(DEMO_PASSWORD)
-            user.is_staff = user.is_superuser = True
-            user.save()
+        demo = self._user(DEMO_USERNAME, "Demo", "Agent", LEASING_AGENT)
+        viewer = self._user(VIEWER_USERNAME, "Read-only", "Viewer", VIEWER)
 
         if reset:
             Property.objects.all().delete()
             Lead.objects.all().delete()  # cascades to messages and visits
         elif Property.objects.exists():
+            self._assign_portfolios(demo, viewer)
             self.stdout.write("Demo data already present (use --reset to recreate).")
             return
 
@@ -161,13 +159,15 @@ class Command(BaseCommand):
             lead.last_activity_at = now - timedelta(minutes=rng.randint(0, 60 * 24 * 30))
         Lead.objects.bulk_update(lead_objs, ["last_activity_at"])
 
-        visits = self._seed_visits(rng, user, lead_objs)
+        visits = self._seed_visits(rng, demo, lead_objs)
 
+        self._assign_portfolios(demo, viewer)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {len(PROPERTIES)} properties, {len(units)} units, {len(lead_objs)} leads, "
-                f"{len(messages)} messages, {len(visits)} visits. "
-                f"Login: {DEMO_USERNAME} / {DEMO_PASSWORD}"
+                f"{len(messages)} messages, {len(visits)} visits. Logins: {DEMO_USERNAME} "
+                f"(agent, all properties) and {VIEWER_USERNAME} (read-only, "
+                f"{VIEWER_PROPERTY_COUNT} properties), password {DEMO_PASSWORD}"
             )
         )
 
@@ -204,3 +204,21 @@ class Command(BaseCommand):
                 )
                 break
         return Visit.objects.bulk_create(visits)
+
+    def _user(self, username: str, first: str, last: str, role: str):
+        """Create or update a demo login. Roles, not superuser, so permissions apply."""
+        user, created = get_user_model().objects.get_or_create(
+            username=username,
+            defaults={"email": f"{username}@leaseflow.dev", "first_name": first, "last_name": last},
+        )
+        if created:
+            user.set_password(DEMO_PASSWORD)
+        user.is_superuser = user.is_staff = False
+        user.save()
+        user.groups.set([Group.objects.get(name=role)])
+        return user
+
+    def _assign_portfolios(self, demo, viewer) -> None:
+        properties = list(Property.objects.order_by("pk"))
+        demo.managed_properties.set(properties)
+        viewer.managed_properties.set(properties[:VIEWER_PROPERTY_COUNT])
