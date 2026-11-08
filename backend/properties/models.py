@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -7,6 +8,10 @@ class Property(models.Model):
     city = models.CharField(max_length=80, db_index=True)
     state = models.CharField(max_length=2)
     image_url = models.URLField(blank=True)
+    # Row-level access: a user only sees the properties they manage (see accounts.permissions).
+    managers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="managed_properties", blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

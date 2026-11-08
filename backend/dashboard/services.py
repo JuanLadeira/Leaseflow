@@ -1,11 +1,17 @@
+from django.contrib.auth.models import AbstractBaseUser
+
+from accounts.permissions import portfolio_of, require
 from dashboard import repositories
 from leads.models import Lead
 from properties.services import occupancy_rate
 
 
-async def get_metrics() -> dict:
-    total, vacant = await repositories.unit_counts()
-    by_status = {s.value: 0 for s in Lead.Status} | await repositories.leads_by_status()
+async def get_metrics(user: AbstractBaseUser) -> dict:
+    """Portfolio metrics, computed only over the properties the user manages."""
+    await require(user, "properties.view_unit", "leads.view_lead")
+    scope = portfolio_of(user)
+    total, vacant = await repositories.unit_counts(scope)
+    by_status = {s.value: 0 for s in Lead.Status} | await repositories.leads_by_status(scope)
     total_leads = sum(by_status.values())
     return {
         "total_units": total,

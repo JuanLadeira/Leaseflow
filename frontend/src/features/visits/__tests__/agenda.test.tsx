@@ -121,14 +121,17 @@ describe('Agenda empty week', () => {
   it('points to the next booked tour and jumps to its week', async () => {
     const later = tomorrowAt(10)
     later.setDate(later.getDate() + 21)
+    const shownWeek = startOfWeek(new Date())
     server.use(
       http.get(`${API}/visits`, ({ request }) => {
         const start = new Date(new URL(request.url).searchParams.get('start')!)
-        // the shown week is empty; the look-ahead range finds a tour three weeks out
-        return HttpResponse.json(start > tomorrow ? [makeVisit({ start: later })] : [])
+        // The shown week is empty; the look-ahead range (which starts after it) finds a
+        // tour three weeks out. Compared to the shown week, not to "tomorrow": on the last
+        // day of a week the look-ahead starts tomorrow at midnight.
+        return HttpResponse.json(start > shownWeek ? [makeVisit({ start: later })] : [])
       }),
     )
-    const { user, router } = renderApp(`/visits?week=${toDateKey(startOfWeek(new Date()))}`)
+    const { user, router } = renderApp(`/visits?week=${toDateKey(shownWeek)}`)
     expect(await screen.findByText('No tours this week.')).toBeInTheDocument()
     await user.click(await screen.findByRole('button', { name: 'Go to that week' }))
     expect(router.state.location.search).toContain(`week=${toDateKey(startOfWeek(later))}`)

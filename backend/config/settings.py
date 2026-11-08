@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "leads",
     "dashboard",
     "visits",
+    "mcp_server",
 ]
 
 MIDDLEWARE = [
@@ -117,3 +118,35 @@ JWT_REFRESH_TTL = timedelta(days=int(os.environ.get("JWT_REFRESH_DAYS", "7")))
 # streamer, so the demo and the test-suite work offline.
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")
+
+# --- MCP server ---------------------------------------------------------------
+# Streamable HTTP endpoint mounted next to Django (config/asgi.py). Agent tokens
+# carry `aud` = MCP_RESOURCE_URL, so set it to the public URL clients connect to.
+# On Render, RENDER_EXTERNAL_URL / RENDER_EXTERNAL_HOSTNAME are set automatically.
+_PUBLIC_URL = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000").rstrip("/")
+MCP_RESOURCE_URL = os.environ.get("MCP_RESOURCE_URL", f"{_PUBLIC_URL}/mcp")
+MCP_ISSUER_URL = os.environ.get("MCP_ISSUER_URL", f"{_PUBLIC_URL}/api")
+# DNS-rebinding protection: Host/Origin headers the MCP endpoint accepts.
+MCP_ALLOWED_HOSTS = env_list("MCP_ALLOWED_HOSTS", "localhost,localhost:*,127.0.0.1:*,backend:*")
+if _render_host := os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
+    MCP_ALLOWED_HOSTS.append(_render_host)
+MCP_TRUST_FORWARDED_FOR = env_bool("DJANGO_BEHIND_PROXY")  # client IP in the audit trail
+MCP_ALLOWED_ORIGINS = env_list("MCP_ALLOWED_ORIGINS", "http://localhost:*,http://127.0.0.1:*")
+
+# --- Logging ------------------------------------------------------------------
+# One JSON object per line for the MCP audit logger (easy to ship to any log
+# store); everything else keeps Django's defaults.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "core.logging.JsonFormatter"}},
+    "handlers": {"json": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "loggers": {
+        "leaseflow.mcp": {
+            "handlers": ["json"],
+            "level": os.environ.get("MCP_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "mcp": {"handlers": ["json"], "level": "WARNING", "propagate": False},
+    },
+}

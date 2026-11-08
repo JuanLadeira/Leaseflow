@@ -5,6 +5,7 @@ from accounts.security import JWTAuth
 from core.exceptions import DomainError
 from dashboard.routers import router as dashboard_router
 from leads.routers import router as leads_router
+from mcp_server.routers import router as mcp_router
 from properties.routers import router as properties_router
 from visits.routers import router as visits_router
 
@@ -27,6 +28,7 @@ api.add_router("/", properties_router, auth=JWTAuth())
 api.add_router("/", leads_router, auth=JWTAuth())
 api.add_router("/", dashboard_router, auth=JWTAuth())
 api.add_router("/", visits_router, auth=JWTAuth())
+api.add_router("/mcp", mcp_router, auth=JWTAuth())
 
 
 @api.get("/health", tags=["meta"])
